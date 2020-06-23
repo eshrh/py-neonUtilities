@@ -4,6 +4,7 @@ def mkdt(y,m):
     if m<10:
         m = "0"+str(m)
     return str(y)+"-"+str(m)
+
 def getRangeDates(sdate,edate):
     dates = []
     sy,sm = int(sdate.split("-")[0]), int(sdate.split("-")[1])
@@ -21,4 +22,3 @@ def basicUrl(dpid,site,date):
     return baseurl+dpid+"/"+site+"/"+date
 
 
-print(basicUrl("sdf","sdf","sjdf"))
