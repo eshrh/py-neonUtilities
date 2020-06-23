@@ -40,7 +40,6 @@ class NeonObservational:
         urllib.request.urlretrieve(index[zipidx]['url'],os.path.join(self.rootname, index[zipidx]['name']))
         self.zipfiles.append(os.path.join(os.getcwd(),self.rootname,index[zipidx]['name']))
 
-
     def constructIdxUrls(self):
         urls = []
         if self.data['site']==str:
@@ -55,3 +54,5 @@ class NeonObservational:
 def test():
     data = {"dpID":"DP1.10003.001","site":["WOOD"],"sdate":"2015-07","edate":"2015-07","package":"basic"}
     obj = NeonObservational(data)
+
+test()
