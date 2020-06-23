@@ -14,4 +14,18 @@ without the overhead of having to manage `rpy`.
 
 You can install this package from pypi with `pip install py-neonUtils`
 
+The `neonUtilities.NeonObservational.NeonObservational` class contains the primary utlities to download and stack data.
+
+An example of general usage:
+```python
+from neonUtilities.NeonObservational import NeonObservational
+
+neonobj = NeonObservational(dpID="DP1.10003.001", site=["WOOD"], dates=["2015-07","2017-07"], package="basic")
+neonobj.download()
+neonobj.stackByTable()
+```
+
+`NeonObservational` supports multiple sites data, as well as passing a 2-dimensional array of ranges to `dates` to download several ranges of month-chunk data.
+
+ 
 
