@@ -27,7 +27,8 @@ neonobj.download()
 neonobj.stackByTable()
 ```
 
-`NeonObservational` supports multiple sites data, as well as passing a 2-dimensional array of ranges to `dates` to download several ranges of month-chunk data.
+This modules contains some improvements over
+the original R module. You can pass a 2-dimensional array to `dates` to download several ranges of month-chunk data.
 You can also pass the zip directory name to `stackByTable` to use an existing download similarly to the R package.
 
  
