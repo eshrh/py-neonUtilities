@@ -14,6 +14,7 @@ class NeonObservational:
         if not os.path.exists(self.rootname):
             os.makedirs(self.rootname)
             print(f"[created root folder {self.rootname}]")
+
         self.idxurls = self.constructIdxUrls()
         print(f"{len(self.idxurls)} files in total")
         self.zipfiles = []
