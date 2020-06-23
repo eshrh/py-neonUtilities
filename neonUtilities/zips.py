@@ -6,14 +6,14 @@ import os
 import re
 
 class NeonObservational:
-    def __init__(self,data):
-        self.data = data
+    def __init__(self,dpID=None,site=None,sdate=None,edate=None,package="basic",token=None):
+        self.data = {"dpID":dpID,"site":site,"sdate":sdate,"edate":edate,"package":package,"token":token}
 
+    def download(self):
         self.rootname = data["dpID"]
         if not os.path.exists(self.rootname):
             os.makedirs(self.rootname)
             print(f"[created root folder {self.rootname}]")
-
         self.idxurls = self.constructIdxUrls()
         print(f"{len(self.idxurls)} files in total")
         self.zipfiles = []
@@ -55,5 +55,3 @@ class NeonObservational:
 def test():
     data = {"dpID":"DP1.10003.001","site":["WOOD"],"sdate":"2015-07","edate":"2015-07","package":"basic"}
     obj = NeonObservational(data)
-
-test()
