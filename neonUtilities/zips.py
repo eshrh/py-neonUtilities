@@ -1,7 +1,7 @@
 import json
 import requests
 import urllib
-import utils
+from utils import *
 import os
 import re
 
@@ -38,9 +38,9 @@ class NeonObservational:
             self.data['site'] = [self.data['site']]
         if self.data['edate']== "":
            self.data['edate'] = self.data['sdate']
-        dates = utils.getRangeDates(self.data['sdate'],self.data['edate'])
+        dates = getRangeDates(self.data['sdate'],self.data['edate'])
         for site in self.data['site']:
-            urls.extend([utils.basicUrl(self.data['dpID'],site,date) for date in dates])
+            urls.extend([basicUrl(self.data['dpID'],site,date) for date in dates])
         return urls
 
 
