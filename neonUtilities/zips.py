@@ -9,10 +9,10 @@ class NeonObservational:
     def __init__(self,data):
         self.data = data
 
-        rootname = data["dpID"]
-        if not os.path.exists(rootname):
-            os.makedirs(rootname)
-        print(f"[created root folder {rootname}]")
+        self.rootname = data["dpID"]
+        if not os.path.exists(self.rootname):
+            os.makedirs(self.rootname)
+        print(f"[created root folder {self.rootname}]")
 
         self.idxurls = self.constructIdxUrls()
         print(f"{len(self.idxurls)} files in total")
@@ -23,14 +23,13 @@ class NeonObservational:
 
     def downloadZips(self,idxurl):
         index = json.loads(requests.get(idxurl).text)['data']['files']
-        zipre = re.compile("(.*)"+data["package"]+"(.*)zip")
+        zipre = re.compile("(.*)"+self.data["package"]+"(.*)zip")
         for i in range(len(index)):
             match = zipre.match(index[i]['name'])
             if match:
+                zipidx = i
                 break
-        print(match)
-        zipname = index[zipidx]['name']
-
+        urllib.request.urlretrieve(index[zipidx]['url'],os.path.join(self.rootname, index[zipidx]['name']))
 
 
     def constructIdxUrls(self):
@@ -43,8 +42,6 @@ class NeonObservational:
         for site in self.data['site']:
             urls.extend([utils.basicUrl(self.data['dpID'],site,date) for date in dates])
         return urls
-
-
 
 
 data = {"dpID":"DP1.10003.001","site":["WOOD"],"sdate":"2015-07","edate":"2015-07","package":"basic"}
