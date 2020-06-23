@@ -5,9 +5,10 @@ It aims to provide the functionality of the [NEONutilities R package](https://gi
 without the overhead of having to manage `rpy`.
 
 ## Progress
-- [ ] Observational data
+- [X] Observational data
   - [X] Download data zips 
-  - [ ] Table stacking
+  - [X] Table stacking
+  - [ ] Support for READMEs, EML and variables files
 - [ ] AOP/EC data
 - [ ] package for pypi
 
