@@ -21,11 +21,14 @@ An example of general usage:
 from neonUtilities.NeonObservational import NeonObservational
 
 neonobj = NeonObservational(dpID="DP1.10003.001", site=["WOOD"], dates=["2015-07","2017-07"], package="basic")
+#Download two specific basic month-chunks from the WOOD site for DP1.10003.001
+
 neonobj.download()
 neonobj.stackByTable()
 ```
 
 `NeonObservational` supports multiple sites data, as well as passing a 2-dimensional array of ranges to `dates` to download several ranges of month-chunk data.
+You can also pass the zip directory name to `stackByTable` to use an existing download similarly to the R package.
 
  
 
