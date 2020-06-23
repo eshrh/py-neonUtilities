@@ -11,4 +11,6 @@ without the overhead of having to manage `rpy`.
 - [ ] AOP/EC data
 - [ ] package for pypi
 
+You can install this package from pypi with `pip install py-neonUtils`
+
 
