@@ -42,7 +42,7 @@ class NeonObservational(Neon):
         files = [[i for i in j if dataFileRE.search(i)] for j in files]
         for i in files[0]:
             name = self.extractName(i)
-            out = open(os.path.join(stackedDir,name+"_stacked"),"a")
+            out = open(os.path.join(stackedDir,name+"_stacked.csv"),"a")
             for line in open(os.path.join(root,i)):
                 out.write(line)
 
@@ -56,9 +56,6 @@ class NeonObservational(Neon):
 
 def test():
     obj = NeonObservational(dpID="DP1.10003.001", site=["WOOD"], dates=["2015-07","2017-07"], package="basic")
-    obj.download()
-    #obj.stackByTable(obj.data["dpID"])
-    obj.stackByTable()
 
 
 test()

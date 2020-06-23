@@ -25,16 +25,20 @@ class Neon:
             self.downloadZips(idxurl)
         print("Done downloading.")
 
+    def makeReq(self,url):
+        if data['token']:
+            return req.get(url,headers={"X-API-TOKEN":self.data['token']})
+        else:
+            return req.get(url)
+
     def downloadZips(self,idxurl):
-        req = requests.get(idxurl)
+        req = self.makeReq(idxurl)
         while req.headers["X-RateLimit-Remaining"]==0:
             print("Rate limit exceeded. Consider using an api token. Pausing...")
             time.sleep(req.headers['RetryAfter'])
             print("Retrying")
-            req = requests.get(idxurl)
+            req = self.makeReq(idxurl)
 
-        index = json.loads(req.text)['data']['files']
-        zipre = re.compile("(.*)"+self.data["package"]+"(.*)zip")
         zipidx = None
         for i in range(len(index)):
             match = zipre.match(index[i]['name'])
