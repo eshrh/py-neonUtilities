@@ -1,14 +1,17 @@
 import glob
-from Neon import Neon
+from importlib import reload
+import neon
+
+reload(neon)
 import os
 import zipfile
 import shutil as sh
 import re
 
 
-class NeonObservational(Neon):
+class NeonObservational(neon.Neon):
     def __init__(self, dpID=None, site=None, dates=None, package="basic", token=None):
-        Neon.__init__(self, dpID, site, dates, package, token)
+        neon.Neon.__init__(self, dpID, site, dates, package, token)
         self.nameRE = re.compile("[0-9]{3}\.(.*)\.[0-9]{4}-[0-9]{2}\.")
 
     def extractName(self, s):
@@ -77,6 +80,7 @@ def test():
         dates=["2015-07", "2017-07"],
         package="basic",
     )
+    obj.download()
 
 
 test()
