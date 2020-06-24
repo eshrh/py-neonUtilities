@@ -18,8 +18,14 @@ class NeonObservational(Neon):
         return s[match.start()+8:match.end()-9]
 
     def stackByTable(self,root=None):
-        #another solution may be to read the EML file. This is more robust,
-        #but can be extremely slow with extraneous information.
+        """
+        Method to stack zip files by table
+
+        stackByTable can be used as a class method after downloading files, or you can provide a single argument
+        which is the path to the directory containing zip files. If used as a class method,
+        it will create a directory named the dpID of your file. After stacking, the csv files containing
+        data will be placed in <dpID>/stackedFiles. The csv name will follow the pattern DESC_stacked.csv
+        """
 
         if not root:
             root = os.path.join(os.getcwd(),self.rootname)
@@ -54,8 +60,8 @@ class NeonObservational(Neon):
 
             out.close()
 
+#tester function to remove when publishing on pypi
 def test():
     obj = NeonObservational(dpID="DP1.10003.001", site=["WOOD"], dates=["2015-07","2017-07"], package="basic")
-
 
 test()
