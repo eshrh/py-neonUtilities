@@ -9,6 +9,7 @@ without the overhead of having to manage `rpy`.
   - [X] Download data zips 
   - [X] Table stacking
   - [ ] Support for READMEs, EML and variables files
+- [ ] Instrumentals
 - [ ] AOP/EC data
 - [ ] package for pypi
 
