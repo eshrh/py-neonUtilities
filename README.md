@@ -11,7 +11,7 @@ without the overhead of having to manage `rpy`.
   - [ ] Support for READMEs, EML and variables files
 - [ ] Instrumentals
 - [ ] AOP/EC data
-- [ ] package for pypi
+- [X] package for pypi (check the pypi branch)
 
 You can install this package from pypi with `pip install py-neonUtils`
 
