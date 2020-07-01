@@ -4,6 +4,7 @@ import re
 import time
 import requests as req
 import urllib
+import glob
 
 
 class Neon:
@@ -18,6 +19,7 @@ class Neon:
             "token": token,
         }
         self.baseurl = "https://data.neonscience.org/api/v0/data/"
+        self.zipre = re.compile("(.*)" + self.data["package"] + "(.*)zip")
 
     def download(self):
         """Class method to download zip files"""
@@ -59,11 +61,10 @@ class Neon:
             req = self.makeReq(idxurl)
 
         index = json.loads(req.text)["data"]["files"]
-        zipre = re.compile("(.*)" + self.data["package"] + "(.*)zip")
 
         zipidx = None
         for i in range(len(index)):
-            match = zipre.match(index[i]["name"])
+            match = self.zipre.match(index[i]["name"])
             if match:
                 zipidx = i
                 break
@@ -98,7 +99,6 @@ class Neon:
             dates.extend([self.mkdt(ey, i) for i in range(1, em + 1)])
         return dates
 
-
     def basicUrl(self, dpid, site, date):
         return self.baseurl + dpid + "/" + site + "/" + date
 
@@ -118,5 +118,13 @@ class Neon:
                 dates.extend(self.getRangeDates(date[0], date[1]))
 
         for site in self.data["site"]:
-            urls.extend([self.basicUrl(self.data["dpID"], site, date) for date in dates])
+            urls.extend(
+                [self.basicUrl(self.data["dpID"], site, date) for date in dates]
+            )
         return urls
+
+    def cleandir(self,direc):
+        toRemove = [i for i in glob.glob(os.path.join(direc,"*")) if not self.zipre.match(i) and not os.path.isdir(i)]
+        for i in toRemove:
+            os.remove(i)
+
