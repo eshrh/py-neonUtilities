@@ -9,6 +9,7 @@ import os
 import shutil
 import zipfile
 import re
+from itertools import chain
 
 
 class NeonObservational(neon.Neon):
@@ -81,19 +82,15 @@ class NeonObservational(neon.Neon):
 
     def stack_site_date(self):
         # TODO site date is not always common between sites.
-        for i in self.siteDateFiles[0]:
-            name = self.extractName(i)
+        flat = set([self.extractName(i) for i in list(chain.from_iterable(self.siteDateFiles))])
+        for name in flat:
             filename = os.path.join(self.stackedDir, name + "_stacked.csv")
             out = neon.CSVwriter(filename)
-            out.append(os.path.join(self.root, i))
-
-            for other in range(1, len(self.siteDateFiles)):
-                out.append(
-                    os.path.join(
-                        self.root,
-                        [i for i in self.siteDateFiles[other] if name in i][0],
-                    )
-                )
+            for other in range(len(self.siteDateFiles)):
+                for i in self.siteDateFiles[other]:
+                    if name in i:
+                        out.append(os.path.join(self.root,i))
+                        break
 
             out.close()
             self.stackedFiles[name] = filename
@@ -139,7 +136,7 @@ def test():
         dpID="DP1.20138.001",
         # TODO Check lab-all and lab-current.
         # TODO copy latest version of _all_ files.
-        site=["REDB"],
+        site=["REDB","PRIN"],
         dates=["2020-02"],
         package="expanded",
     )
