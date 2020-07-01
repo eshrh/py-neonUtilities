@@ -11,6 +11,10 @@ class Neon:
     """Parent class for all Neon datatypes"""
 
     def __init__(self, dpID=None, site=None, dates=None, package="basic", token=None):
+        if package != "basic" and package != "expanded":
+            print("package must be either basic or expanded. defaulting to basic.")
+            package = "basic"
+
         self.data = {
             "dpID": dpID,
             "site": site,
@@ -20,6 +24,7 @@ class Neon:
         }
         self.baseurl = "https://data.neonscience.org/api/v0/data/"
         self.zipre = re.compile("(.*)" + self.data["package"] + "(.*)zip")
+        self.nameRE = re.compile("[0-9]{3}\.(.*)\.([0-9]{4}-[0-9]{2}|[a-z]*)\.")
 
     def download(self):
         """Class method to download zip files"""
@@ -123,8 +128,39 @@ class Neon:
             )
         return urls
 
-    def cleandir(self,direc):
-        toRemove = [i for i in glob.glob(os.path.join(direc,"*")) if not self.zipre.match(i) and not os.path.isdir(i)]
+    def cleandir(self, direc):
+        toRemove = [
+            i
+            for i in glob.glob(os.path.join(direc, "*"))
+            if not self.zipre.match(i) and not os.path.isdir(i)
+        ]
         for i in toRemove:
             os.remove(i)
 
+    def extractName(self, s):
+        match = self.nameRE.search(s)
+        if not match:
+            return None
+        matchstr = str(match.group(0))
+        if matchstr.count(".") == 4:
+            return s[match.start() + 8 : match.end() - 7]
+        if matchstr.count(".") == 5:
+            return s[match.start() + 8 : match.end() - 15]
+
+    def extractSite(self, s):
+        return s.split(".")[2]
+
+
+class CSVwriter:
+    def __init__(self, outname):
+        self.filename = outname
+        self.out = open(self.filename, "a")
+
+    def append(self, inname):
+        with open(inname) as otherf:
+            otherf.__next__()
+            for line in otherf:
+                self.out.write(line)
+
+    def close(self):
+        self.out.close()
