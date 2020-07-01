@@ -14,7 +14,8 @@ import re
 class NeonObservational(neon.Neon):
     def __init__(self, dpID=None, site=None, dates=None, package="basic", token=None):
         neon.Neon.__init__(self, dpID, site, dates, package, token)
-        self.nameRE = re.compile("[0-9]{3}\.(.*)\.([0-9]{4}-[0-9]{2}|"+package+")\.")
+        #self.nameRE = re.compile("[0-9]{3}\.(.*)\.([0-9]{4}-[0-9]{2}|"+package+")\.")
+        self.nameRE = re.compile("[0-9]{3}\.(.*)\.([0-9]{4}-[0-9]{2}|[a-z]*)\.")
         self.stackedFiles = {}
 
     def extractName(self, s):
@@ -44,14 +45,23 @@ class NeonObservational(neon.Neon):
         else:
             root = os.path.join(os.getcwd(), root)
             self.zipfiles = glob.glob(os.path.join(root, "*.zip"))
+
+        if len(self.zipfiles)==0:
+            print("No download files found. Pass the download directory to this function or use the download() method.")
+            return
+
         self.root = (
             os.path.join(os.getcwd(), self.rootname)
             if not root
             else os.path.join(os.getcwd(), root)
         )
+
         self.stackedDir = os.path.join(os.getcwd(), root, "stackedFiles")
-        if not os.path.exists(self.stackedDir):
-            os.makedirs(self.stackedDir)
+
+        if os.path.exists(self.stackedDir):
+            shutil.rmtree(self.stackedDir)
+        os.makedirs(self.stackedDir)
+
 
         files = []
         self.zipfiles = sorted(self.zipfiles)
@@ -61,14 +71,15 @@ class NeonObservational(neon.Neon):
                 f.extractall(self.root)
                 files.append(f.namelist())
 
-        siteDateRE = re.compile(
-            "\.[a-z]{3}_(.*)\.[0-9]{4}-[0-9]{2}\." + self.data["package"] + "(.*)\.csv"
-        )
-        siteAllRE = re.compile("\.[a-z]{3}_([a-z]*)\."+self.data["package"]+"(.*)\.csv")
+        #siteDateRE = re.compile("\.[a-z]{3}_(.*)\.[0-9]{4}-[0-9]{2}\." + self.data["package"] + "(.*)\.csv")
+        #siteAllRE = re.compile("\.[a-z]{3}_([a-z]*)\."+self.data["package"]+"(.*)\.csv")
+        #expanded packages sometimes contain basic files.
+        siteDateRE = re.compile("\.[a-z]{3}_(.*)\.[0-9]{4}-[0-9]{2}\." + "[a-z]*" + "(.*)\.csv")
+
+        siteAllRE = re.compile("\.[a-z]{3}_([a-zA-Z]*)\.[a-z]*\.(.*)\.csv")
 
         self.siteDateFiles = [[i for i in j if siteDateRE.search(i)] for j in files]
         self.siteAllFiles = [[i for i in j if siteAllRE.search(i)] for j in files]
-
 
         self.stackedFiles = {}
         self.stack_site_date()
@@ -87,9 +98,7 @@ class NeonObservational(neon.Neon):
                 out.write(line)
 
             for other in range(1, len(self.siteDateFiles)):
-                with open(
-                    os.path.join(self.root, [i for i in self.siteDateFiles[other] if name in i][0])
-                ) as otherf:
+                with open(os.path.join(self.root, [i for i in self.siteDateFiles[other] if name in i][0]),"r") as otherf:
                     otherf.__next__()
                     for line in otherf:
                         out.write(line)
@@ -108,13 +117,10 @@ class NeonObservational(neon.Neon):
 
     def to_pandas(self):
         """Converts a stacked dataset into a dictionary of pandas DataFrames"""
-
         if len(self.stackedFiles) == 0:
             print("No files stacked")
             return
-
         import pandas as pd
-
         dfs = {}
         for i in self.stackedFiles:
             dfs[i] = pd.read_csv(self.stackedFiles[i])
@@ -125,12 +131,17 @@ class NeonObservational(neon.Neon):
 def test():
     obj = NeonObservational(
         dpID="DP1.10055.001",
-        site=["DELA"],
-        dates=["2019-07","2019-08"],
+        #TODO Check lab-all and lab-current.
+        #TODO copy latest version of _all_ files.
+        #TODO how to deal with multiple site metadata???
+
+        site=["BART","JORN"],
+        dates=["2017-03"],
         package="basic",
     )
-    obj.download()
-    obj.stackByTable("DP1.10055.001")
+    #obj.download()
+    obj.stackByTable("DP1.10055.001",clean=False)
 
 
 test()
+
