@@ -128,6 +128,7 @@ class NeonObservational(neon.Neon):
         dfs = {}
         for i in self.stackedFiles:
             dfs[i] = pd.read_csv(self.stackedFiles[i])
+        return dfs
 
 
 # tester function to remove when publishing on pypi

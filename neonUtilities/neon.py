@@ -155,12 +155,15 @@ class CSVwriter:
     def __init__(self, outname):
         self.filename = outname
         self.out = open(self.filename, "a")
+        self.first = True
 
     def append(self, inname):
         with open(inname) as otherf:
-            otherf.__next__()
+            if not self.first:
+                otherf.__next__()
             for line in otherf:
                 self.out.write(line)
+            self.first = False
 
     def close(self):
         self.out.close()
