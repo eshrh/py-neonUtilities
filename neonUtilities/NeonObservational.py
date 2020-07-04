@@ -43,9 +43,7 @@ class NeonObservational(neon.Neon):
             return
 
         self.root = (
-            join(os.getcwd(), self.rootname)
-            if not root
-            else join(os.getcwd(), root)
+            join(os.getcwd(), self.rootname) if not root else join(os.getcwd(), root)
         )
 
         self.stackedDir = join(os.getcwd(), root, "stackedFiles")
@@ -60,12 +58,12 @@ class NeonObservational(neon.Neon):
 
         for fpath in self.zipfiles:
             with zipfile.ZipFile(fpath, "r") as f:
-                Path(join(self.root,fpath[:-4])).mkdir(parents=True, exist_ok=True)
-                f.extractall(join(self.root,fpath[:-4]))
+                Path(join(self.root, fpath[:-4])).mkdir(parents=True, exist_ok=True)
+                f.extractall(join(self.root, fpath[:-4]))
                 namelist = f.namelist()
                 files.append(namelist)
                 for i in namelist:
-                    self.filepaths[i] = join(self.root,fpath[:-4],i)
+                    self.filepaths[i] = join(self.root, fpath[:-4], i)
 
         # siteDateRE = re.compile("\.[a-z]{3}_(.*)\.[0-9]{4}-[0-9]{2}\." + self.data["package"] + "(.*)\.csv")
         # siteAllRE = re.compile("\.[a-z]{3}_([a-z]*)\."+self.data["package"]+"(.*)\.csv")
@@ -89,7 +87,9 @@ class NeonObservational(neon.Neon):
 
     def stack_site_date(self):
         # TODO site date is not always common between sites.
-        flat = set([self.extractName(i) for i in list(chain.from_iterable(self.siteDateFiles))])
+        flat = set(
+            [self.extractName(i) for i in list(chain.from_iterable(self.siteDateFiles))]
+        )
         for name in flat:
             filename = join(self.stackedDir, name + "_stacked.csv")
             out = neon.CSVwriter(filename)
@@ -97,7 +97,7 @@ class NeonObservational(neon.Neon):
                 for i in self.siteDateFiles[other]:
                     if name in i:
                         path = self.filepaths[i]
-                        out.append(join(self.root,path))
+                        out.append(join(self.root, path))
                         break
 
             out.close()
@@ -114,7 +114,7 @@ class NeonObservational(neon.Neon):
         return inst
 
     def stack_site_all(self):
-        #TODO file may not be in the latest version.
+        # TODO file may not be in the latest version.
         if len(self.siteAllFiles) == 0:
             return
         for i in self.siteAllFiles[0]:
@@ -142,31 +142,34 @@ class NeonObservational(neon.Neon):
 
 # tester function to remove when publishing on pypi
 
+
 def test():
     obj = NeonObservational(
         dpID="DP1.10104.001",
         site=["NIWO"],
-        #dates=[["2019-06","2019-09"]],
-        dates=[["2019-06","2019-07"]],
+        # dates=[["2019-06","2019-09"]],
+        dates=[["2019-06", "2019-07"]],
         package="expanded",
     )
     obj.download()
     obj.stackByTable(clean=True)
-    df= obj.to_pandas()
+    df = obj.to_pandas()
+
 
 def test2():
     obj = NeonObservational(
-            dpID="DP1.20138.001",
-            # TODO Check lab-all and lab-current.
-            # TODO copy latest version of _all_ files.
-            site=["REDB","PRIN"],
-            dates=["2020-02"],
-            package="expanded",
-        )
+        dpID="DP1.20138.001",
+        # TODO Check lab-all and lab-current.
+        # TODO copy latest version of _all_ files.
+        site=["REDB", "PRIN"],
+        dates=["2020-02"],
+        package="expanded",
+    )
     obj.download()
     obj.stackByTable(clean=True)
     df = obj.to_pandas()
 
     print(df["amc_fieldCellCounts"])
+
 
 test2()

@@ -135,7 +135,7 @@ class Neon:
             for i in glob.glob(os.path.join(direc, "*"))
             if not self.zipre.match(i) and "stackedFiles" not in i
         ]
-        print(glob.glob(os.path.join(direc,"*")))
+        print(glob.glob(os.path.join(direc, "*")))
 
         for i in toRemove:
             if os.path.isdir(i):
