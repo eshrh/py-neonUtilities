@@ -5,6 +5,7 @@ import time
 import requests as req
 import urllib
 import glob
+import shutil
 
 
 class Neon:
@@ -132,10 +133,15 @@ class Neon:
         toRemove = [
             i
             for i in glob.glob(os.path.join(direc, "*"))
-            if not self.zipre.match(i) and not os.path.isdir(i)
+            if not self.zipre.match(i) and "stackedFiles" not in i
         ]
+        print(glob.glob(os.path.join(direc,"*")))
+
         for i in toRemove:
-            os.remove(i)
+            if os.path.isdir(i):
+                shutil.rmtree(i)
+            else:
+                os.remove(i)
 
     def extractName(self, s):
         match = self.nameRE.search(s)
