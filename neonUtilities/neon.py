@@ -8,6 +8,7 @@ import glob
 import shutil
 import hashlib
 
+
 class Neon:
     """Parent class for all Neon datatypes"""
 
@@ -163,11 +164,10 @@ class Neon:
 
         return os.path.basename(s).split(".")[2]
 
-    def hashf(self,filename):
+    def hashf(self, filename):
         md5_hash = hashlib.md5()
-        with open(filename,"rb") as f:
-            # Read and update hash in chunks of 4K
-            for byte_block in iter(lambda: f.read(4096),b""):
+        with open(filename, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
                 md5_hash.update(byte_block)
         return md5_hash.hexdigest()
 

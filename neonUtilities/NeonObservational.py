@@ -59,7 +59,7 @@ class NeonObservational(neon.Neon):
             with zipfile.ZipFile(fpath, "r") as f:
                 Path(join(self.root, fpath[:-4])).mkdir(parents=True, exist_ok=True)
                 f.extractall(join(self.root, fpath[:-4]))
-                files.append([join(self.root,fpath[:-4],i) for i in f.namelist()])
+                files.append([join(self.root, fpath[:-4], i) for i in f.namelist()])
 
         # siteDateRE = re.compile("\.[a-z]{3}_(.*)\.[0-9]{4}-[0-9]{2}\." + self.data["package"] + "(.*)\.csv")
         # siteAllRE = re.compile("\.[a-z]{3}_([a-z]*)\."+self.data["package"]+"(.*)\.csv")
@@ -74,7 +74,9 @@ class NeonObservational(neon.Neon):
 
         self.siteDateFiles = [[i for i in j if siteDateRE.search(i)] for j in files]
         self.siteAllFiles = [[i for i in j if siteAllRE.search(i)] for j in files]
-        self.labFiles = [[i for i in j if labRE.match(os.path.basename(i))] for j in files]
+        self.labFiles = [
+            [i for i in j if labRE.match(os.path.basename(i))] for j in files
+        ]
 
         self.stackedFiles = {}
 
@@ -132,44 +134,45 @@ class NeonObservational(neon.Neon):
             self.stackedFiles[name] = filename
 
     def stack_lab(self):
-        if len(self.labFiles)==0:
+        if len(self.labFiles) == 0:
             return
         for i in self.labFiles[0]:
             name = self.extractName(i)
-            if self.is_lab_all(name,self.extractLoc(i), self.labFiles):
+            if self.is_lab_all(name, self.extractLoc(i), self.labFiles):
                 self.stack_lab_all(name)
             else:
                 self.stack_lab_cur(name)
 
     def stack_lab_all(self, name):
-        toStack = self.instances(name,self.labFiles)
-        filename = join(self.stackedDir,name+"_stacked.csv")
+        toStack = self.instances(name, self.labFiles)
+        filename = join(self.stackedDir, name + "_stacked.csv")
         outf = neon.CSVwriter(filename)
         for j in toStack:
             if not toStack[j]:
                 continue
-            outf.append(join(self.root,toStack[j]))
+            outf.append(join(self.root, toStack[j]))
         outf.close()
         self.stackedFiles[name] = filename
 
-    def stack_lab_cur(self,name):
-        flat = set(
-            [i for i in list(chain.from_iterable(self.labFiles)) if name in i]
-        )
-        filename = join(self.stackedDir,name+"_stacked")
+    def stack_lab_cur(self, name):
+        flat = set([i for i in list(chain.from_iterable(self.labFiles)) if name in i])
+        filename = join(self.stackedDir, name + "_stacked")
         out = neon.CSVwriter(filename)
         for f in flat:
             out.append(f)
         out.close()
 
-    def is_lab_all(self,name,lab,files):
-        #print([i for i in list(chain.from_iterable(files)) if name in i])
-        hashes = [self.hashf(i) for i in list(chain.from_iterable(files)) if name in i and lab in i]
-        #if len(hashes)!=len(set(hashes)):
+    def is_lab_all(self, name, lab, files):
+        # print([i for i in list(chain.from_iterable(files)) if name in i])
+        hashes = [
+            self.hashf(i)
+            for i in list(chain.from_iterable(files))
+            if name in i and lab in i
+        ]
+        # if len(hashes)!=len(set(hashes)):
         if 1 != len(set(hashes)):
             return True
         return False
-
 
     def to_pandas(self):
         """Converts a stacked dataset into a dictionary of pandas DataFrames"""
@@ -192,24 +195,22 @@ def test():
         dpID="DP1.10104.001",
         site=["NIWO"],
         # dates=[["2019-06","2019-09"]],
-        dates=["2019-07","2019-08"],
+        dates=["2019-07", "2019-08"],
         package="expanded",
     )
-    #obj.download()
-    obj.stackByTable("DP1.10104.001",clean=False)
+    # obj.download()
+    obj.stackByTable("DP1.10104.001", clean=False)
     df = obj.to_pandas()
 
 
 def test2():
     obj = NeonObservational(
-        dpID="DP1.10055.001",
-        site=["DELA", "TALL"],
-        dates=["2019-02"],
-        package="basic",
+        dpID="DP1.10055.001", site=["DELA", "TALL"], dates=["2019-02"], package="basic",
     )
     obj.download()
-    obj.stackByTable("DP1.10055.001",clean=False)
+    obj.stackByTable("DP1.10055.001", clean=False)
     df = obj.to_pandas()
+
 
 def test3():
     obj1 = NeonObservational(
@@ -228,7 +229,7 @@ def test3():
     )
     obj1.download()
     obj2.download()
-    obj1.stackByTable("DP1.10104.001",clean=False)
+    obj1.stackByTable("DP1.10104.001", clean=False)
     df = obj1.to_pandas()
 
 
