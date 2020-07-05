@@ -53,17 +53,13 @@ class NeonObservational(neon.Neon):
         os.makedirs(self.stackedDir)
 
         files = []
-        self.filepaths = {}
         self.zipfiles = sorted(self.zipfiles)
 
         for fpath in self.zipfiles:
             with zipfile.ZipFile(fpath, "r") as f:
                 Path(join(self.root, fpath[:-4])).mkdir(parents=True, exist_ok=True)
                 f.extractall(join(self.root, fpath[:-4]))
-                namelist = f.namelist()
-                files.append(namelist)
-                for i in namelist:
-                    self.filepaths[i] = join(self.root, fpath[:-4], i)
+                files.append([join(self.root,fpath[:-4],i) for i in f.namelist()])
 
         # siteDateRE = re.compile("\.[a-z]{3}_(.*)\.[0-9]{4}-[0-9]{2}\." + self.data["package"] + "(.*)\.csv")
         # siteAllRE = re.compile("\.[a-z]{3}_([a-z]*)\."+self.data["package"]+"(.*)\.csv")
@@ -73,13 +69,18 @@ class NeonObservational(neon.Neon):
         )
 
         siteAllRE = re.compile("\.[a-z]{3}_([a-zA-Z]*)\.[a-z]*\.(.*)\.csv")
+        labRE = re.compile("NEON\.(.*)\.[a-z]{3}_([a-zA-Z]*)\.csv")
+        self.labRE = labRE
 
         self.siteDateFiles = [[i for i in j if siteDateRE.search(i)] for j in files]
         self.siteAllFiles = [[i for i in j if siteAllRE.search(i)] for j in files]
+        self.labFiles = [[i for i in j if labRE.match(os.path.basename(i))] for j in files]
 
         self.stackedFiles = {}
+
         self.stack_site_date()
         self.stack_site_all()
+        self.stack_lab()
 
         if clean:
             # inherited
@@ -90,14 +91,14 @@ class NeonObservational(neon.Neon):
         flat = set(
             [self.extractName(i) for i in list(chain.from_iterable(self.siteDateFiles))]
         )
+
         for name in flat:
             filename = join(self.stackedDir, name + "_stacked.csv")
             out = neon.CSVwriter(filename)
             for other in range(len(self.siteDateFiles)):
                 for i in self.siteDateFiles[other]:
                     if name in i:
-                        path = self.filepaths[i]
-                        out.append(join(self.root, path))
+                        out.append(join(self.root, i))
                         break
 
             out.close()
@@ -109,7 +110,7 @@ class NeonObservational(neon.Neon):
         for i in files:
             for j in i:
                 if name in j:
-                    inst[self.extractSite(j)] = j
+                    inst[self.extractLoc(j)] = j
                     continue
         return inst
 
@@ -123,9 +124,52 @@ class NeonObservational(neon.Neon):
             filename = join(self.stackedDir, name + "_stacked.csv")
             outf = neon.CSVwriter(filename)
             for j in toStack:
-                outf.append(join(self.root, self.filepaths[toStack[j]]))
+                if not toStack[j]:
+                    continue
+                outf.append(join(self.root, toStack[j]))
+
             outf.close()
             self.stackedFiles[name] = filename
+
+    def stack_lab(self):
+        if len(self.labFiles)==0:
+            return
+        for i in self.labFiles[0]:
+            name = self.extractName(i)
+            if self.is_lab_all(name,self.extractLoc(i), self.labFiles):
+                self.stack_lab_all(name)
+            else:
+                self.stack_lab_cur(name)
+
+    def stack_lab_all(self, name):
+        toStack = self.instances(name,self.labFiles)
+        filename = join(self.stackedDir,name+"_stacked.csv")
+        outf = neon.CSVwriter(filename)
+        for j in toStack:
+            if not toStack[j]:
+                continue
+            outf.append(join(self.root,toStack[j]))
+        outf.close()
+        self.stackedFiles[name] = filename
+
+    def stack_lab_cur(self,name):
+        flat = set(
+            [i for i in list(chain.from_iterable(self.labFiles)) if name in i]
+        )
+        filename = join(self.stackedDir,name+"_stacked")
+        out = neon.CSVwriter(filename)
+        for f in flat:
+            out.append(f)
+        out.close()
+
+    def is_lab_all(self,name,lab,files):
+        #print([i for i in list(chain.from_iterable(files)) if name in i])
+        hashes = [self.hashf(i) for i in list(chain.from_iterable(files)) if name in i and lab in i]
+        #if len(hashes)!=len(set(hashes)):
+        if 1 != len(set(hashes)):
+            return True
+        return False
+
 
     def to_pandas(self):
         """Converts a stacked dataset into a dictionary of pandas DataFrames"""
@@ -148,28 +192,44 @@ def test():
         dpID="DP1.10104.001",
         site=["NIWO"],
         # dates=[["2019-06","2019-09"]],
-        dates=[["2019-06", "2019-07"]],
+        dates=["2019-07","2019-08"],
         package="expanded",
     )
-    obj.download()
-    obj.stackByTable(clean=True)
+    #obj.download()
+    obj.stackByTable("DP1.10104.001",clean=False)
     df = obj.to_pandas()
 
 
 def test2():
     obj = NeonObservational(
-        dpID="DP1.20138.001",
-        # TODO Check lab-all and lab-current.
-        # TODO copy latest version of _all_ files.
-        site=["REDB", "PRIN"],
-        dates=["2020-02"],
-        package="expanded",
+        dpID="DP1.10055.001",
+        site=["DELA", "TALL"],
+        dates=["2019-02"],
+        package="basic",
     )
     obj.download()
-    obj.stackByTable(clean=True)
+    obj.stackByTable("DP1.10055.001",clean=False)
     df = obj.to_pandas()
 
-    print(df["amc_fieldCellCounts"])
+def test3():
+    obj1 = NeonObservational(
+        dpID="DP1.10104.001",
+        site=["NIWO"],
+        # dates=[["2019-06","2019-09"]],
+        dates=["2019-07"],
+        package="expanded",
+    )
+    obj2 = NeonObservational(
+        dpID="DP1.10104.001",
+        site=["MOAB"],
+        # dates=[["2019-06","2019-09"]],
+        dates=["2017-03"],
+        package="expanded",
+    )
+    obj1.download()
+    obj2.download()
+    obj1.stackByTable("DP1.10104.001",clean=False)
+    df = obj1.to_pandas()
 
 
-test2()
+test3()

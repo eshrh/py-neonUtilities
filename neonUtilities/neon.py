@@ -6,7 +6,7 @@ import requests as req
 import urllib
 import glob
 import shutil
-
+import hashlib
 
 class Neon:
     """Parent class for all Neon datatypes"""
@@ -25,7 +25,9 @@ class Neon:
         }
         self.baseurl = "https://data.neonscience.org/api/v0/data/"
         self.zipre = re.compile("(.*)" + self.data["package"] + "(.*)zip")
-        self.nameRE = re.compile("[0-9]{3}\.(.*)\.([0-9]{4}-[0-9]{2}|[a-z]*)\.")
+        self.nameRE = re.compile(
+            "NEON\.(.*)\.[a-z]{3}_([a-zA-Z]*)\.csv|[0-9]{3}\.(.*)\.([0-9]{4}-[0-9]{2}|[a-z]*)\."
+        )
 
     def download(self):
         """Class method to download zip files"""
@@ -135,8 +137,6 @@ class Neon:
             for i in glob.glob(os.path.join(direc, "*"))
             if not self.zipre.match(i) and "stackedFiles" not in i
         ]
-        print(glob.glob(os.path.join(direc, "*")))
-
         for i in toRemove:
             if os.path.isdir(i):
                 shutil.rmtree(i)
@@ -144,17 +144,32 @@ class Neon:
                 os.remove(i)
 
     def extractName(self, s):
+        s = os.path.basename(s)
         match = self.nameRE.search(s)
         if not match:
             return None
         matchstr = str(match.group(0))
+        if matchstr.count(".") == 3:
+            return matchstr.split(".")[-2]
         if matchstr.count(".") == 4:
             return s[match.start() + 8 : match.end() - 7]
         if matchstr.count(".") == 5:
             return s[match.start() + 8 : match.end() - 15]
 
-    def extractSite(self, s):
-        return s.split(".")[2]
+    def extractLoc(self, s):
+        s = os.path.basename(s)
+        if self.labRE.match(s):
+            return s.split(".")[1]
+
+        return os.path.basename(s).split(".")[2]
+
+    def hashf(self,filename):
+        md5_hash = hashlib.md5()
+        with open(filename,"rb") as f:
+            # Read and update hash in chunks of 4K
+            for byte_block in iter(lambda: f.read(4096),b""):
+                md5_hash.update(byte_block)
+        return md5_hash.hexdigest()
 
 
 class CSVwriter:
