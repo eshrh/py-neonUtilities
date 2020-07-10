@@ -16,6 +16,7 @@ from itertools import chain
 
 class NeonObservational(neon.Neon):
     def __init__(self, dpID=None, site=None, dates=None, package="basic", token=None):
+        #inherit functions from the parent Neon class from neon.py
         neon.Neon.__init__(self, dpID, site, dates, package, token)
         self.stackedFiles = {}
 
@@ -42,19 +43,22 @@ class NeonObservational(neon.Neon):
             )
             return
 
+        #set the root to the default if the user gave nothing.
         self.root = (
             join(os.getcwd(), self.rootname) if not root else join(os.getcwd(), root)
         )
 
+        #defaults to the equivalent in the R package for compatibility.
         self.stackedDir = join(os.getcwd(), root, "stackedFiles")
 
+        #reset stackedDir.
         if os.path.exists(self.stackedDir):
             shutil.rmtree(self.stackedDir)
         os.makedirs(self.stackedDir)
 
         files = []
         self.zipfiles = sorted(self.zipfiles)
-
+        #unzip all. sorted to make sure everything is in order.
         for fpath in self.zipfiles:
             with zipfile.ZipFile(fpath, "r") as f:
                 Path(join(self.root, fpath[:-4])).mkdir(parents=True, exist_ok=True)
@@ -67,7 +71,6 @@ class NeonObservational(neon.Neon):
         siteDateRE = re.compile(
             "\.[a-z]{3}_(.*)\.[0-9]{4}-[0-9]{2}\." + "[a-z]*" + "(.*)\.csv"
         )
-
         siteAllRE = re.compile("\.[a-z]{3}_([a-zA-Z]*)\.[a-z]*\.(.*)\.csv")
         labRE = re.compile("NEON\.(.*)\.[a-z]{3}_([a-zA-Z]*)\.csv")
         self.labRE = labRE
@@ -80,6 +83,7 @@ class NeonObservational(neon.Neon):
 
         self.stackedFiles = {}
 
+        #key functions
         self.stack_site_date()
         self.stack_site_all()
         self.stack_lab()
@@ -89,6 +93,10 @@ class NeonObservational(neon.Neon):
             self.cleandir(self.root)
 
     def stack_site_date(self):
+        """stacks site-date files. requires self.siteDateFiles to have been pregenerated.
+        Outputs to self.stackedFiles.
+        """
+
         # TODO site date is not always common between sites.
         flat = set(
             [self.extractName(i) for i in list(chain.from_iterable(self.siteDateFiles))]
@@ -107,6 +115,10 @@ class NeonObservational(neon.Neon):
             self.stackedFiles[name] = filename
 
     def instances(self, name, files):
+        """Helper function for *-all stacking. Finds tables
+        with the same name from each site.
+        """
+
         # requires files to be presorted.
         inst = {i: None for i in self.data["site"]}
         for i in files:
@@ -117,6 +129,8 @@ class NeonObservational(neon.Neon):
         return inst
 
     def stack_site_all(self):
+        """stack site-all"""
+
         # TODO file may not be in the latest version.
         if len(self.siteAllFiles) == 0:
             return
@@ -187,7 +201,7 @@ class NeonObservational(neon.Neon):
         return dfs
 
 
-# tester function to remove when publishing on pypi
+# tester functions to remove when publishing on pypi
 
 
 def test():
