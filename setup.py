@@ -4,7 +4,7 @@ with open('README.md') as f:
     long_description = f.read()
 
 setuptools.setup(
-      name='py-neonUtils',
+      name='py-neonUtilities',
       version='0.4.0',
       description='A native python wrapper for the NEON ecological database api',
       long_description=long_description,
