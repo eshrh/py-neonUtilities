@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with py-neonUtilities.  If not, see <https://www.gnu.org/licenses/>.
 
+#TODO implement file-size summation.
+
 import json
 import os
 import re
@@ -149,7 +151,10 @@ class Neon:
             m = "0" + str(m)
         return str(y) + "-" + str(m)
 
-    def getRangeDates(self, sdate, edate):
+    def getRangeDates(self, pair):
+        if type(pair)==str:
+            return [pair]
+        sdate,edate = pair
         dates = []
         sy, sm = int(sdate.split("-")[0]), int(sdate.split("-")[1])
         ey, em = int(edate.split("-")[0]), int(edate.split("-")[1])
@@ -171,19 +176,23 @@ class Neon:
         if type(self.data["site"]) == str:
             self.data["site"] = [self.data["site"]]
 
-        dates = []
-        for date in self.data["dates"]:
-            # if it is an individual date, mark it for download
-            # else, get the range of dates specified in the inner iterable.
-            if type(date) == str:
-                dates.append(date)
-            else:
-                dates.extend(self.getRangeDates(date[0], date[1]))
+        urls = []
+        if type(self.data["dates"]) == dict:
+            for i in self.data["dates"]:
+                dates = []
+                for date in self.data["dates"][i]:
+                    dates.extend(self.getRangeDates(date))
+                urls.extend([self.basicUrl(self.data["dpID"],i,date) for date in dates])
+        else:
+            dates = []
+            for date in self.data["dates"]:
+                dates.extend(self.getRangeDates(date))
 
-        for site in self.data["site"]:
-            urls.extend(
-                [self.basicUrl(self.data["dpID"], site, date) for date in dates]
-            )
+            for site in self.data["site"]:
+                urls.extend(
+                    [self.basicUrl(self.data["dpID"], site, date) for date in dates]
+                )
+
         return urls
 
     def cleandir(self, direc):

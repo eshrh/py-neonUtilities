@@ -35,6 +35,13 @@ neonobj.stackByTable()
 df = neonobj.to_pandas()
 ```
 
+This module offers a lot of flexibility with month-chunk downloads. You can provide:
+1. A single string to download that chunk for all sites
+2. A list of strings to download those chunks for all sites
+3. Either a nested list or a nested tuple of dates to download that range inclusive,inclusive
+4. Any combination of 2 and 3
+5. A dictionary with sites as keys and number any date definition above to download different month chunks for different sites.
+
 
 
 ## Progress

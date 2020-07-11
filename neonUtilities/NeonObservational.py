@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with py-neonUtilities.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import glob
 from importlib import reload
 import neon
@@ -199,3 +198,10 @@ class NeonObservational(neon.Neon):
         if 1 != len(set(hashes)):
             return True
         return False
+
+def test():
+    n = NeonObservational(dpID="DP1.10055.001",site=["WOOD","MOAB"],dates={"WOOD":["2017-05"],"MOAB":["2017-08"]})
+    n.download()
+    n.stackByTable()
+
+test()
