@@ -15,7 +15,10 @@
 
 
 import glob
-from . import neon
+from importlib import reload
+import neon
+reload(neon)
+
 import os
 from os.path import join
 from pathlib import Path
