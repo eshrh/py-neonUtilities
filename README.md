@@ -7,6 +7,7 @@ without the overhead of having to manage `rpy`.
 ## Installation
 You can install this package from pypi with `pip install py-neonUtils`
 
+Please see the pypi branch for downloads.
 
 ## Usage:
 
