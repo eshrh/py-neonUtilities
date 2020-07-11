@@ -27,8 +27,7 @@ df = neonobj.to_pandas()
 from neonUtilities.NeonObservational import NeonObservational
 import pandas as pd
 
-neonobj = NeonObservational(dpID="DP1.10003.001", site=["WOOD"], dates=["2015-07",["2017-07","2017-12"]], package="basic")
-#Download data from 2015-07 and the range of 2017-07 to 2017-12.
+neonobj = NeonInstrumental(dpID="DP1.10003.001", site=["WOOD"], dates=["2015-07",["2017-07","2017-12"]], avg=30, package="basic")
 
 neonobj.download()
 neonobj.stackByTable()

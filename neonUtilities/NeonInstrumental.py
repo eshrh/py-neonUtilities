@@ -57,7 +57,7 @@ class NeonInstrumental(neon.Neon):
             self.root = join(os.getcwd(),self.rootname)
         else:
             self.root = join(os.getcwd(),root)
-            self.folders = os.listdir(root)
+            self.folders = os.listdir(self.root)
 
         if len(self.folders)==0:
             print("No files stacked. Use download() or pass the folder path to stackByTable.")
@@ -92,7 +92,6 @@ class NeonInstrumental(neon.Neon):
         flat = set(
             [self.extractISname(i) for i in list(chain.from_iterable(self.files))]
         )
-        print(flat)
         for name in flat:
             filename = join(self.stackedDir, name + "_stacked.csv")
             out = neon.CSVwriter(filename)
@@ -105,9 +104,3 @@ class NeonInstrumental(neon.Neon):
             self.stackedFiles[name] = filename
 
 
-def test():
-    n = NeonInstrumental(dpID="DP1.00003.001",site="MOAB",dates=["2018-05","2018-06"],avg=30)
-    #n.download()
-    n.stackByTable(root="DP1.00003.001")
-
-test()

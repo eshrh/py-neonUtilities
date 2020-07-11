@@ -96,7 +96,7 @@ class Neon:
 
     def downloadZips(self, idxurl):
         """privately used function to download an individual zip file from url"""
-        index = getReq(idxurl)
+        index = self.getReq(idxurl)
         zipidx = None
         for i in range(len(index)):
             match = self.zipre.match(index[i]["name"])
