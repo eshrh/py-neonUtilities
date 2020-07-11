@@ -27,6 +27,7 @@ import zipfile
 import re
 from itertools import chain
 
+
 class NeonObservational(neon.Neon):
     def __init__(self, dpID=None, site=None, dates=None, package="basic", token=None):
         # inherit functions from the parent Neon class from neon.py
@@ -199,9 +200,15 @@ class NeonObservational(neon.Neon):
             return True
         return False
 
+
 def test():
-    n = NeonObservational(dpID="DP1.10055.001",site=["WOOD","MOAB"],dates={"WOOD":["2017-05"],"MOAB":["2017-08"]})
+    n = NeonObservational(
+        dpID="DP1.10055.001",
+        site=["WOOD", "MOAB"],
+        dates={"WOOD": ["2017-05"], "MOAB": ["2017-08"]},
+    )
     n.download()
     n.stackByTable()
+
 
 test()

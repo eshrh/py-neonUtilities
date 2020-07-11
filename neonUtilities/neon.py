@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with py-neonUtilities.  If not, see <https://www.gnu.org/licenses/>.
 
-#TODO implement file-size summation.
+# TODO implement file-size summation.
 
 import json
 import os
@@ -46,7 +46,7 @@ class Neon:
         }
 
         self.baseurl = "https://data.neonscience.org/api/v0/data/"
-        self.zipre = re.compile(package+"(.*)\.zip")
+        self.zipre = re.compile(package + "(.*)\.zip")
         self.nameRE = re.compile(
             "NEON\.(.*)\.[a-z]{3}_([a-zA-Z]*)\.csv|[0-9]{3}\.(.*)\.([0-9]{4}-[0-9]{2}|[a-z]*)\."
         )
@@ -106,7 +106,7 @@ class Neon:
             if match:
                 zipidx = i
                 break
-        if zipidx!=None:
+        if zipidx != None:
             urllib.request.urlretrieve(
                 index[zipidx]["url"], os.path.join(self.rootname, index[zipidx]["name"])
             )
@@ -152,9 +152,9 @@ class Neon:
         return str(y) + "-" + str(m)
 
     def getRangeDates(self, pair):
-        if type(pair)==str:
+        if type(pair) == str:
             return [pair]
-        sdate,edate = pair
+        sdate, edate = pair
         dates = []
         sy, sm = int(sdate.split("-")[0]), int(sdate.split("-")[1])
         ey, em = int(edate.split("-")[0]), int(edate.split("-")[1])
@@ -182,7 +182,9 @@ class Neon:
                 dates = []
                 for date in self.data["dates"][i]:
                     dates.extend(self.getRangeDates(date))
-                urls.extend([self.basicUrl(self.data["dpID"],i,date) for date in dates])
+                urls.extend(
+                    [self.basicUrl(self.data["dpID"], i, date) for date in dates]
+                )
         else:
             dates = []
             for date in self.data["dates"]:

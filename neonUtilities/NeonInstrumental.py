@@ -66,7 +66,7 @@ class NeonInstrumental(neon.Neon):
                 self.downloadZips(idxurl)
         print("Done downloading.")
 
-    def unzipAll(self,root):
+    def unzipAll(self, root):
         folders = []
         self.zipfiles = sorted(self.zipfiles)
         # unzip all. sorted to make sure everything is in order.
@@ -74,9 +74,8 @@ class NeonInstrumental(neon.Neon):
             with zipfile.ZipFile(fpath, "r") as f:
                 Path(join(self.root, fpath[:-4])).mkdir(parents=True, exist_ok=True)
                 f.extractall(join(self.root, fpath[:-4]))
-                folders.append(join(self.root,fpath[:-4]))
+                folders.append(join(self.root, fpath[:-4]))
         return folders
-
 
     def stackByTable(self, root=None):
         if not root:
@@ -85,12 +84,12 @@ class NeonInstrumental(neon.Neon):
             self.root = join(os.getcwd(), root)
             self.folders = os.listdir(self.root)
 
-        if len(self.folders) == 0 and len(self.zipfiles)==0:
+        if len(self.folders) == 0 and len(self.zipfiles) == 0:
             print(
                 "No files stacked. Use download() or pass the folder path to stackByTable."
             )
             return
-        elif len(self.folders)==0 and len(self.zipfiles)>0:
+        elif len(self.folders) == 0 and len(self.zipfiles) > 0:
             self.folders = self.unzipAll(self.root)
 
         self.stackedDir = join(os.getcwd(), self.root, "stackedFiles")
@@ -135,11 +134,13 @@ class NeonInstrumental(neon.Neon):
             out.close()
             self.stackedFiles[name] = filename
 
+
 def test():
     n = NeonInstrumental(
-        dpID="DP1.00003.001", site="MOAB", dates=["2018-05","2018-06"]
+        dpID="DP1.00003.001", site="MOAB", dates=["2018-05", "2018-06"]
     )
     n.download()
     n.stackByTable()
+
 
 test()
