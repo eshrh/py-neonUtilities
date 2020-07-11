@@ -4,35 +4,48 @@ This project is a heavy work in progress to write a native python wrapper for th
 It aims to provide the functionality of the [NEONutilities R package](https://github.com/NEONScience/NEON-utilities/tree/master/neonUtilities)
 without the overhead of having to manage `rpy`.
 
-## Progress
-- [X] Observational data
-  - [X] Download data zips 
-  - [X] Table stacking
-  - [ ] Support for READMEs, EML and variables files
-- [ ] Instrumentals
-- [ ] AOP/EC data
-- [X] package for pypi (check the pypi branch)
-
+## Installation
 You can install this package from pypi with `pip install py-neonUtils`
 
-The `neonUtilities.NeonObservational.NeonObservational` class contains the primary utilities to download and stack data.
 
-An example of general usage:
+## Usage:
+
+### Observational Data
 ```python
 from neonUtilities.NeonObservational import NeonObservational
 import pandas as pd
 
-neonobj = NeonObservational(dpID="DP1.10003.001", site=["WOOD"], dates=["2015-07","2017-07"], package="basic")
-#Download two specific basic month-chunks from the WOOD site for DP1.10003.001
+neonobj = NeonObservational(dpID="DP1.10003.001", site=["WOOD"], dates=["2015-07",["2017-07","2017-12"]], package="basic")
+#Download data from 2015-07 and the range of 2017-07 to 2017-12.
+
+neonobj.download()
+neonobj.stackByTable()
+df = neonobj.to_pandas()
+```
+### Instrumental Data 
+```python
+from neonUtilities.NeonObservational import NeonObservational
+import pandas as pd
+
+neonobj = NeonObservational(dpID="DP1.10003.001", site=["WOOD"], dates=["2015-07",["2017-07","2017-12"]], package="basic")
+#Download data from 2015-07 and the range of 2017-07 to 2017-12.
 
 neonobj.download()
 neonobj.stackByTable()
 df = neonobj.to_pandas()
 ```
 
-This modules contains some improvements over
-the original R module. You can pass a 2-dimensional array to `dates` to download several ranges of month-chunk data.
-You can also pass the zip directory name to `stackByTable` to use an existing download similarly to the R package.
 
- 
 
+## Progress
+- [X] Observational data
+  - [X] Download data zips 
+  - [X] Table stacking
+  - [ ] Support for READMEs, EML and variables files
+- [X] Instrumental data
+  - [X] Download specific average intervals
+- [ ] AOP data
+- [ ] EC data
+- [ ] Taxon data manip
+- [X] API token
+- [X] package for pypi (check the pypi branch)
