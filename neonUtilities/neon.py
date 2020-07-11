@@ -44,7 +44,7 @@ class Neon:
         }
 
         self.baseurl = "https://data.neonscience.org/api/v0/data/"
-        self.zipre = re.compile("(.*)" + self.data["package"] + "(.*)zip")
+        self.zipre = re.compile(package+"(.*)\.zip")
         self.nameRE = re.compile(
             "NEON\.(.*)\.[a-z]{3}_([a-zA-Z]*)\.csv|[0-9]{3}\.(.*)\.([0-9]{4}-[0-9]{2}|[a-z]*)\."
         )
@@ -100,11 +100,11 @@ class Neon:
         index = self.getReq(idxurl)
         zipidx = None
         for i in range(len(index)):
-            match = self.zipre.match(index[i]["name"])
+            match = self.zipre.search(index[i]["name"])
             if match:
                 zipidx = i
                 break
-        if zipidx:
+        if zipidx!=None:
             urllib.request.urlretrieve(
                 index[zipidx]["url"], os.path.join(self.rootname, index[zipidx]["name"])
             )

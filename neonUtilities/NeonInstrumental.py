@@ -23,6 +23,8 @@ import os
 from os.path import join
 import shutil
 from itertools import chain
+import zipfile
+from pathlib import Path
 
 
 class NeonInstrumental(neon.Neon):
@@ -40,7 +42,7 @@ class NeonInstrumental(neon.Neon):
                 "[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_" + avg + "min"
             )
         else:
-            self.isre = re.compile("[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)min")
+            self.isre = re.compile("[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_(.*)")
 
     def download(self):
         """Class method to download zip files"""
@@ -58,8 +60,23 @@ class NeonInstrumental(neon.Neon):
         for n, idxurl in enumerate(self.idxurls):
             self.currentlyDl = n
             print(f"Downloading chunk {n+1}")
-            self.downloadFiles(idxurl, re=self.isre)
+            if self.data["avg"]:
+                self.downloadFiles(idxurl, re=self.isre)
+            else:
+                self.downloadZips(idxurl)
         print("Done downloading.")
+
+    def unzipAll(self,root):
+        folders = []
+        self.zipfiles = sorted(self.zipfiles)
+        # unzip all. sorted to make sure everything is in order.
+        for fpath in self.zipfiles:
+            with zipfile.ZipFile(fpath, "r") as f:
+                Path(join(self.root, fpath[:-4])).mkdir(parents=True, exist_ok=True)
+                f.extractall(join(self.root, fpath[:-4]))
+                folders.append(join(self.root,fpath[:-4]))
+        return folders
+
 
     def stackByTable(self, root=None):
         if not root:
@@ -68,13 +85,15 @@ class NeonInstrumental(neon.Neon):
             self.root = join(os.getcwd(), root)
             self.folders = os.listdir(self.root)
 
-        if len(self.folders) == 0:
+        if len(self.folders) == 0 and len(self.zipfiles)==0:
             print(
                 "No files stacked. Use download() or pass the folder path to stackByTable."
             )
             return
+        elif len(self.folders)==0 and len(self.zipfiles)>0:
+            self.folders = self.unzipAll(self.root)
 
-        self.stackedDir = join(os.getcwd(), root, "stackedFiles")
+        self.stackedDir = join(os.getcwd(), self.root, "stackedFiles")
 
         if os.path.exists(self.stackedDir):
             shutil.rmtree(self.stackedDir)
@@ -84,7 +103,7 @@ class NeonInstrumental(neon.Neon):
         self.files = []
 
         for i in self.folders:
-            self.files.append([join(i, j) for j in os.listdir(join(root, i))])
+            self.files.append([join(i, j) for j in os.listdir(join(self.root, i))])
         self.stack_site_date()
 
     def extractISname(self, s):
@@ -93,7 +112,7 @@ class NeonInstrumental(neon.Neon):
         if not match:
             return None
         matchstr = str(match.group(0))
-        return matchstr[20:]
+        return matchstr.split(".")[-5]
 
     def stack_site_date(self):
         """stacks site-date files. requires self.files to have been pregenerated.
@@ -104,6 +123,8 @@ class NeonInstrumental(neon.Neon):
             [self.extractISname(i) for i in list(chain.from_iterable(self.files))]
         )
         for name in flat:
+            if not name:
+                continue
             filename = join(self.stackedDir, name + "_stacked.csv")
             out = neon.CSVwriter(filename)
             for other in range(len(self.files)):
@@ -113,3 +134,13 @@ class NeonInstrumental(neon.Neon):
                         break
             out.close()
             self.stackedFiles[name] = filename
+
+def test():
+    n = NeonInstrumental(
+        dpID="DP1.00003.001", site="MOAB", dates=["2018-05","2018-06"]
+
+    )
+    n.download()
+    n.stackByTable()
+
+test()
