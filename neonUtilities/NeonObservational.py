@@ -1,3 +1,19 @@
+# This file is part of py-neonUtilities.
+
+# Foobar is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# Foobar is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with py-neonUtilities.  If not, see <https://www.gnu.org/licenses/>.
+
+
 import glob
 
 from importlib import reload
@@ -19,6 +35,7 @@ class NeonObservational(neon.Neon):
         #inherit functions from the parent Neon class from neon.py
         neon.Neon.__init__(self, dpID, site, dates, package, token)
         self.stackedFiles = {}
+
 
     def stackByTable(self, root=None, clean=True):
         """
@@ -96,12 +113,10 @@ class NeonObservational(neon.Neon):
         """stacks site-date files. requires self.siteDateFiles to have been pregenerated.
         Outputs to self.stackedFiles.
         """
-
         # TODO site date is not always common between sites.
         flat = set(
             [self.extractName(i) for i in list(chain.from_iterable(self.siteDateFiles))]
         )
-
         for name in flat:
             filename = join(self.stackedDir, name + "_stacked.csv")
             out = neon.CSVwriter(filename)
@@ -188,17 +203,6 @@ class NeonObservational(neon.Neon):
             return True
         return False
 
-    def to_pandas(self):
-        """Converts a stacked dataset into a dictionary of pandas DataFrames"""
-        if len(self.stackedFiles) == 0:
-            print("No files stacked")
-            return
-        import pandas as pd
-
-        dfs = {}
-        for i in self.stackedFiles:
-            dfs[i] = pd.read_csv(self.stackedFiles[i])
-        return dfs
 
 
 # tester functions to remove when publishing on pypi
@@ -212,7 +216,7 @@ def test():
         dates=["2019-07", "2019-08"],
         package="expanded",
     )
-    # obj.download()
+    obj.download()
     obj.stackByTable("DP1.10104.001", clean=False)
     df = obj.to_pandas()
 
@@ -247,4 +251,4 @@ def test3():
     df = obj1.to_pandas()
 
 
-test3()
+test()
