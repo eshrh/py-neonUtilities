@@ -17,6 +17,7 @@
 import glob
 from importlib import reload
 import neon
+
 reload(neon)
 
 import os
@@ -27,12 +28,12 @@ import zipfile
 import re
 from itertools import chain
 
+
 class NeonObservational(neon.Neon):
     def __init__(self, dpID=None, site=None, dates=None, package="basic", token=None):
-        #inherit functions from the parent Neon class from neon.py
+        # inherit functions from the parent Neon class from neon.py
         neon.Neon.__init__(self, dpID, site, dates, package, token)
         self.stackedFiles = {}
-
 
     def stackByTable(self, root=None, clean=True):
         """
@@ -57,22 +58,22 @@ class NeonObservational(neon.Neon):
             )
             return
 
-        #set the root to the default if the user gave nothing.
+        # set the root to the default if the user gave nothing.
         self.root = (
             join(os.getcwd(), self.rootname) if not root else join(os.getcwd(), root)
         )
 
-        #defaults to the equivalent in the R package for compatibility.
+        # defaults to the equivalent in the R package for compatibility.
         self.stackedDir = join(os.getcwd(), root, "stackedFiles")
 
-        #reset stackedDir.
+        # reset stackedDir.
         if os.path.exists(self.stackedDir):
             shutil.rmtree(self.stackedDir)
         os.makedirs(self.stackedDir)
 
         files = []
         self.zipfiles = sorted(self.zipfiles)
-        #unzip all. sorted to make sure everything is in order.
+        # unzip all. sorted to make sure everything is in order.
         for fpath in self.zipfiles:
             with zipfile.ZipFile(fpath, "r") as f:
                 Path(join(self.root, fpath[:-4])).mkdir(parents=True, exist_ok=True)
@@ -97,7 +98,7 @@ class NeonObservational(neon.Neon):
 
         self.stackedFiles = {}
 
-        #key functions
+        # key functions
         self.stack_site_date()
         self.stack_site_all()
         self.stack_lab()
@@ -199,6 +200,3 @@ class NeonObservational(neon.Neon):
         if 1 != len(set(hashes)):
             return True
         return False
-
-
-

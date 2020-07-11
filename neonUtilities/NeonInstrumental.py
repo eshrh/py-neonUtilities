@@ -15,6 +15,7 @@
 
 from importlib import reload
 import neon
+
 reload(neon)
 
 import re
@@ -23,16 +24,21 @@ from os.path import join
 import shutil
 from itertools import chain
 
+
 class NeonInstrumental(neon.Neon):
-    def __init__(self, dpID=None, site=None, dates=None, avg = None, package="basic", token=None):
-        #inherit functions from the parent Neon class from neon.py
-        if type(avg)==int:
+    def __init__(
+        self, dpID=None, site=None, dates=None, avg=None, package="basic", token=None
+    ):
+        # inherit functions from the parent Neon class from neon.py
+        if type(avg) == int:
             avg = str(avg)
 
         neon.Neon.__init__(self, dpID, site, dates, avg, package, token)
         self.stackedFiles = {}
         if avg:
-            self.isre = re.compile("[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_"+avg+"min")
+            self.isre = re.compile(
+                "[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_" + avg + "min"
+            )
         else:
             self.isre = re.compile("[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)min")
 
@@ -52,21 +58,23 @@ class NeonInstrumental(neon.Neon):
         for n, idxurl in enumerate(self.idxurls):
             self.currentlyDl = n
             print(f"Downloading chunk {n+1}")
-            self.downloadFiles(idxurl,re=self.isre)
+            self.downloadFiles(idxurl, re=self.isre)
         print("Done downloading.")
 
-    def stackByTable(self,root=None):
+    def stackByTable(self, root=None):
         if not root:
-            self.root = join(os.getcwd(),self.rootname)
+            self.root = join(os.getcwd(), self.rootname)
         else:
-            self.root = join(os.getcwd(),root)
+            self.root = join(os.getcwd(), root)
             self.folders = os.listdir(self.root)
 
-        if len(self.folders)==0:
-            print("No files stacked. Use download() or pass the folder path to stackByTable.")
+        if len(self.folders) == 0:
+            print(
+                "No files stacked. Use download() or pass the folder path to stackByTable."
+            )
             return
 
-        self.stackedDir = join(os.getcwd(), root,"stackedFiles")
+        self.stackedDir = join(os.getcwd(), root, "stackedFiles")
 
         if os.path.exists(self.stackedDir):
             shutil.rmtree(self.stackedDir)
@@ -76,10 +84,10 @@ class NeonInstrumental(neon.Neon):
         self.files = []
 
         for i in self.folders:
-            self.files.append([join(i,j) for j in os.listdir(join(root,i))])
+            self.files.append([join(i, j) for j in os.listdir(join(root, i))])
         self.stack_site_date()
 
-    def extractISname(self,s):
+    def extractISname(self, s):
         s = os.path.basename(s)
         match = self.isre.search(s)
         if not match:
@@ -105,5 +113,3 @@ class NeonInstrumental(neon.Neon):
                         break
             out.close()
             self.stackedFiles[name] = filename
-
-

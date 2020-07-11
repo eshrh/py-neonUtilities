@@ -27,7 +27,9 @@ import hashlib
 class Neon:
     """Parent class for all Neon datatypes"""
 
-    def __init__(self, dpID=None, site=None, dates=None, avg=None, package="basic", token=None):
+    def __init__(
+        self, dpID=None, site=None, dates=None, avg=None, package="basic", token=None
+    ):
         if package != "basic" and package != "expanded":
             print("package must be either basic or expanded. defaulting to basic.")
             package = "basic"
@@ -41,7 +43,6 @@ class Neon:
             "token": token,
         }
 
-
         self.baseurl = "https://data.neonscience.org/api/v0/data/"
         self.zipre = re.compile("(.*)" + self.data["package"] + "(.*)zip")
         self.nameRE = re.compile(
@@ -51,7 +52,7 @@ class Neon:
         self.packagere = re.compile(package)
         self.folders = []
 
-    def makeIfNotExists(self,name):
+    def makeIfNotExists(self, name):
         if not os.path.exists(name):
             os.makedirs(name)
             return True
@@ -83,7 +84,7 @@ class Neon:
         else:
             return req.get(url)
 
-    def getReq(self,idxurl):
+    def getReq(self, idxurl):
         """catch ratelimit exceeded and wait"""
         req = self.makeReq(idxurl)
         while req.headers["X-RateLimit-Remaining"] == 0:
@@ -92,7 +93,7 @@ class Neon:
             print("Retrying")
             req = self.makeReq(idxurl)
 
-        return json.loads(req.text)['data']['files']
+        return json.loads(req.text)["data"]["files"]
 
     def downloadZips(self, idxurl):
         """privately used function to download an individual zip file from url"""
@@ -116,29 +117,32 @@ class Neon:
                 f"Zip file missing. This may be because this data chunk {idxurl} does not exist."
             )
 
-    def downloadFiles(self,idxurl,re=None):
+    def downloadFiles(self, idxurl, re=None):
         """Downloads files instead of zips"""
         index = self.getReq(idxurl)
         foldername = None
         for i in index:
-            if self.zipre.match(i['name']):
-                foldername = i['name'][:-4]
+            if self.zipre.match(i["name"]):
+                foldername = i["name"][:-4]
                 break
 
         if not foldername:
-            print("File missing. This may be because data chunk {idxurl} does not exist.")
+            print(
+                "File missing. This may be because data chunk {idxurl} does not exist."
+            )
             return
 
-        self.makeIfNotExists(os.path.join(self.rootname,foldername))
+        self.makeIfNotExists(os.path.join(self.rootname, foldername))
         if not re:
             re = self.filere
 
         for i in index:
-            if re.search(i['name']) and self.packagere.search(i['name']):
-                urllib.request.urlretrieve(i["url"],os.path.join(self.rootname,foldername,i['name']))
+            if re.search(i["name"]) and self.packagere.search(i["name"]):
+                urllib.request.urlretrieve(
+                    i["url"], os.path.join(self.rootname, foldername, i["name"])
+                )
 
         self.folders.append(foldername)
-
 
     def mkdt(self, y, m):
         if m < 10:
