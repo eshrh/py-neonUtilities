@@ -25,8 +25,7 @@ import requests as req
 import urllib
 import glob
 import shutil
-import hashlib
-
+import zlib
 
 class Neon:
     """Parent class for all Neon datatypes"""
@@ -52,6 +51,14 @@ class Neon:
         self.nameRE = re.compile(
             "NEON\.(.*)\.[a-z]{3}_([a-zA-Z]*)\.csv|[0-9]{3}\.(.*)\.([0-9]{4}-[0-9]{2}|[a-z]*)\."
         )
+
+        if avg!=None:
+            self.isre = re.compile(
+                "[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_" + avg + "min"
+            )
+        else:
+            self.isre = re.compile("[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_(.*)")
+
         self.filere = re.compile(".csv|.xml")
         self.packagere = re.compile(package)
         self.folders = []
@@ -62,9 +69,10 @@ class Neon:
             return True
         return False
 
-    def download(self):
-        """Class method to download zip files. Override to account for averages."""
+    def download(self, check_hashes = False):
+        """Class method to download zip files. Overridden."""
         self.rootname = self.data["dpID"]
+
         # create dataproduct directory if it does not exist
         # TODO allow for multiple dataproducts to be downloaded at once and stacked.
         if self.makeIfNotExists(self.rootname):
@@ -74,11 +82,18 @@ class Neon:
         self.idxurls = self.constructIdxUrls()
         print(f"{len(self.idxurls)} file(s) in total")
         self.zipfiles = []
+
+        res = False
         for n, idxurl in enumerate(self.idxurls):
             self.currentlyDl = n
-            print(f"Downloading zip {n+1}")
-            self.downloadZips(idxurl)
-        print("Done downloading.")
+            print(f"Downloading chunk {n+1}")
+            if self.data["avg"]!=None:
+                res = self.downloadFiles(idxurl, re=self.isre)
+                #TODO results
+            else:
+                res = self.downloadZips(idxurl)
+        if res:
+            print("Done downloading.")
 
     def makeReq(self, url):
         """wrapper function to allow for API token requests"""
@@ -119,6 +134,8 @@ class Neon:
             print(
                 f"Zip file missing. This may be because this data chunk {idxurl} does not exist."
             )
+            return False
+        return True
 
     def downloadFiles(self, idxurl, re=None):
         """Downloads files instead of zips"""
@@ -131,9 +148,9 @@ class Neon:
 
         if not foldername:
             print(
-                "File missing. This may be because data chunk {idxurl} does not exist."
+                f"File missing. This may be because data chunk {idxurl} does not exist."
             )
-            return
+            return False
 
         self.makeIfNotExists(os.path.join(self.rootname, foldername))
         if not re:
@@ -144,8 +161,8 @@ class Neon:
                 urllib.request.urlretrieve(
                     i["url"], os.path.join(self.rootname, foldername, i["name"])
                 )
-
         self.folders.append(foldername)
+        return True
 
     def mkdt(self, y, m):
         if m < 10:
@@ -215,11 +232,14 @@ class Neon:
         os.makedirs(direc)
 
     def hashf(self, filename):
-        md5_hash = hashlib.md5()
-        with open(filename, "rb") as f:
-            for byte_block in iter(lambda: f.read(4096), b""):
-                md5_hash.update(byte_block)
-        return md5_hash.hexdigest()
+        with open(filename, 'rb') as fh:
+            hash = 0
+            while True:
+                s = fh.read(65536)
+                if not s:
+                    break
+                hash = zlib.crc32(s, hash)
+        return "%08X" % (hash)
 
     def to_pandas(self):
         """Converts a stacked dataset into a dictionary of pandas DataFrames"""

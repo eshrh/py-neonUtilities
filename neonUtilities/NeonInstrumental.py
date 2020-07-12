@@ -37,34 +37,6 @@ class NeonInstrumental(neon.Neon):
 
         neon.Neon.__init__(self, dpID, site, dates, avg, package, token)
         self.stackedFiles = {}
-        if avg:
-            self.isre = re.compile(
-                "[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_" + avg + "min"
-            )
-        else:
-            self.isre = re.compile("[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_(.*)")
-
-    def download(self):
-        """Class method to download zip files. Overridden."""
-        self.rootname = self.data["dpID"]
-
-        # create dataproduct directory if it does not exist
-        # TODO allow for multiple dataproducts to be downloaded at once and stacked.
-        if self.makeIfNotExists(self.rootname):
-            print(f"[created root folder {self.rootname}]")
-
-        # find all the idxurls of month-chunks
-        self.idxurls = self.constructIdxUrls()
-        print(f"{len(self.idxurls)} file(s) in total")
-        self.zipfiles = []
-        for n, idxurl in enumerate(self.idxurls):
-            self.currentlyDl = n
-            print(f"Downloading chunk {n+1}")
-            if self.data["avg"]:
-                self.downloadFiles(idxurl, re=self.isre)
-            else:
-                self.downloadZips(idxurl)
-        print("Done downloading.")
 
     def unzipAll(self, root):
         folders = []

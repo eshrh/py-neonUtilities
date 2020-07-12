@@ -31,7 +31,7 @@ from itertools import chain
 class NeonObservational(neon.Neon):
     def __init__(self, dpID=None, site=None, dates=None, package="basic", token=None):
         # inherit functions from the parent Neon class from neon.py
-        neon.Neon.__init__(self, dpID, site, dates, package, token)
+        neon.Neon.__init__(self, dpID=dpID, site=site, dates=dates, package=package, token=token)
         self.stackedFiles = {}
 
     def stackByTable(self, root=None, clean=True):
@@ -177,7 +177,7 @@ class NeonObservational(neon.Neon):
             if name in i and lab in i
         ]
         # if len(hashes)!=len(set(hashes)):
-        if 1 != len(set(hashes)):
+        if 1 == len(set(hashes)):
             return True
         return False
 
@@ -211,5 +211,30 @@ def test():
     n.download()
     n.stackByTable()
 
+def test2():
+    obj = NeonObservational(
+        dpID="DP1.10055.001",
+        site=["DELA", "TALL"],
+        dates=["2019-02"],
+        package="expanded",
+    )
+    obj.download()
+    obj.stackByTable(clean=True)
+    obj.stackByTable("DP1.10055.001",clean=False)
+    df = obj.to_pandas()
 
-test()
+    print(df["amc_fieldCellCounts"])
+
+def test3():
+    obj1 = NeonObservational(
+        dpID="DP1.10104.001",
+        site=["NIWO","JERC"],
+        # dates=[["2019-06","2019-09"]],
+        dates=["2019-07"],
+        package="expanded",
+    )
+    obj1.download()
+    obj1.stackByTable("DP1.10104.001",clean=False)
+    df = obj1.to_pandas()
+
+test3()
