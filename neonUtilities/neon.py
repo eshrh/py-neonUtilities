@@ -14,9 +14,11 @@
 # along with py-neonUtilities.  If not, see <https://www.gnu.org/licenses/>.
 
 # TODO implement file-size summation.
+# TODO make sure that you can actually only provide dates and not site.
 
 import json
 import os
+from os.path import join
 import re
 import time
 import requests as req
@@ -61,9 +63,8 @@ class Neon:
         return False
 
     def download(self):
-        """Class method to download zip files"""
+        """Class method to download zip files. Override to account for averages."""
         self.rootname = self.data["dpID"]
-
         # create dataproduct directory if it does not exist
         # TODO allow for multiple dataproducts to be downloaded at once and stacked.
         if self.makeIfNotExists(self.rootname):
@@ -171,7 +172,6 @@ class Neon:
         return self.baseurl + dpid + "/" + site + "/" + date
 
     def constructIdxUrls(self):
-        urls = []
         # if there is only one site as a string, turn it into a single element array.
         if type(self.data["site"]) == str:
             self.data["site"] = [self.data["site"]]
@@ -209,25 +209,10 @@ class Neon:
             else:
                 os.remove(i)
 
-    def extractName(self, s):
-        s = os.path.basename(s)
-        match = self.nameRE.search(s)
-        if not match:
-            return None
-        matchstr = str(match.group(0))
-        if matchstr.count(".") == 3:
-            return matchstr.split(".")[-2]
-        if matchstr.count(".") == 4:
-            return s[match.start() + 8 : match.end() - 7]
-        if matchstr.count(".") == 5:
-            return s[match.start() + 8 : match.end() - 15]
-
-    def extractLoc(self, s):
-        s = os.path.basename(s)
-        if self.labRE.match(s):
-            return s.split(".")[1]
-
-        return os.path.basename(s).split(".")[2]
+    def resetDir(self,direc):
+        if os.path.exists(direc):
+            shutil.rmtree(direc)
+        os.makedirs(direc)
 
     def hashf(self, filename):
         md5_hash = hashlib.md5()
@@ -247,6 +232,20 @@ class Neon:
         for i in self.stackedFiles:
             dfs[i] = pd.read_csv(self.stackedFiles[i])
         return dfs
+
+    def stack_site_date(self, files, flatnames):
+        for name in flatnames:
+            if not name:
+                continue
+            filename = join(self.stackedDir, name + "_stacked.csv")
+            out = CSVwriter(filename)
+            for other in range(len(files)):
+                for i in files[other]:
+                    if name in i:
+                        out.append(join(self.root, i))
+                        break
+            out.close()
+            self.stackedFiles[name] = filename
 
 
 class CSVwriter:

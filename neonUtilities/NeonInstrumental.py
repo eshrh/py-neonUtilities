@@ -45,7 +45,7 @@ class NeonInstrumental(neon.Neon):
             self.isre = re.compile("[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_(.*)")
 
     def download(self):
-        """Class method to download zip files"""
+        """Class method to download zip files. Overridden."""
         self.rootname = self.data["dpID"]
 
         # create dataproduct directory if it does not exist
@@ -77,7 +77,7 @@ class NeonInstrumental(neon.Neon):
                 folders.append(join(self.root, fpath[:-4]))
         return folders
 
-    def stackByTable(self, root=None):
+    def stackByTable(self, root=None, clean=True):
         if not root:
             self.root = join(os.getcwd(), self.rootname)
         else:
@@ -93,17 +93,21 @@ class NeonInstrumental(neon.Neon):
             self.folders = self.unzipAll(self.root)
 
         self.stackedDir = join(os.getcwd(), self.root, "stackedFiles")
-
-        if os.path.exists(self.stackedDir):
-            shutil.rmtree(self.stackedDir)
-        os.makedirs(self.stackedDir)
+        self.resetDir(self.stackedDir)
 
         self.folders = sorted(self.folders)
         self.files = []
 
         for i in self.folders:
             self.files.append([join(i, j) for j in os.listdir(join(self.root, i))])
-        self.stack_site_date()
+
+        flat = set(
+            [self.extractISname(i) for i in list(chain.from_iterable(self.files))]
+        )
+        self.stack_site_date(self.files,flat)
+
+        if clean:
+            self.cleandir(self.root)
 
     def extractISname(self, s):
         s = os.path.basename(s)
@@ -112,28 +116,6 @@ class NeonInstrumental(neon.Neon):
             return None
         matchstr = str(match.group(0))
         return matchstr.split(".")[-5]
-
-    def stack_site_date(self):
-        """stacks site-date files. requires self.files to have been pregenerated.
-        Outputs to self.stackedFiles.
-        """
-        # TODO site date is not always common between sites.
-        flat = set(
-            [self.extractISname(i) for i in list(chain.from_iterable(self.files))]
-        )
-        for name in flat:
-            if not name:
-                continue
-            filename = join(self.stackedDir, name + "_stacked.csv")
-            out = neon.CSVwriter(filename)
-            for other in range(len(self.files)):
-                for i in self.files[other]:
-                    if name in i:
-                        out.append(join(self.root, i))
-                        break
-            out.close()
-            self.stackedFiles[name] = filename
-
 
 def test():
     n = NeonInstrumental(

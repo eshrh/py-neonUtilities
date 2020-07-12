@@ -65,10 +65,7 @@ class NeonObservational(neon.Neon):
         # defaults to the equivalent in the R package for compatibility.
         self.stackedDir = join(os.getcwd(), root, "stackedFiles")
 
-        # reset stackedDir.
-        if os.path.exists(self.stackedDir):
-            shutil.rmtree(self.stackedDir)
-        os.makedirs(self.stackedDir)
+        self.resetDir(self.stackedDir)
 
         files = []
         self.zipfiles = sorted(self.zipfiles)
@@ -97,8 +94,11 @@ class NeonObservational(neon.Neon):
 
         self.stackedFiles = {}
 
+        flat = set(
+            [self.extractName(i) for i in list(chain.from_iterable(self.siteDateFiles))]
+        )
         # key functions
-        self.stack_site_date()
+        self.stack_site_date(self.siteDateFiles,flat)
         self.stack_site_all()
         self.stack_lab()
 
@@ -106,25 +106,6 @@ class NeonObservational(neon.Neon):
             # inherited
             self.cleandir(self.root)
 
-    def stack_site_date(self):
-        """stacks site-date files. requires self.siteDateFiles to have been pregenerated.
-        Outputs to self.stackedFiles.
-        """
-        # TODO site date is not always common between sites.
-        flat = set(
-            [self.extractName(i) for i in list(chain.from_iterable(self.siteDateFiles))]
-        )
-        for name in flat:
-            filename = join(self.stackedDir, name + "_stacked.csv")
-            out = neon.CSVwriter(filename)
-            for other in range(len(self.siteDateFiles)):
-                for i in self.siteDateFiles[other]:
-                    if name in i:
-                        out.append(join(self.root, i))
-                        break
-
-            out.close()
-            self.stackedFiles[name] = filename
 
     def instances(self, name, files):
         """Helper function for *-all stacking. Finds tables
@@ -199,6 +180,26 @@ class NeonObservational(neon.Neon):
         if 1 != len(set(hashes)):
             return True
         return False
+
+    def extractName(self, s):
+        s = os.path.basename(s)
+        match = self.nameRE.search(s)
+        if not match:
+            return None
+        matchstr = str(match.group(0))
+        if matchstr.count(".") == 3:
+            return matchstr.split(".")[-2]
+        if matchstr.count(".") == 4:
+            return s[match.start() + 8 : match.end() - 7]
+        if matchstr.count(".") == 5:
+            return s[match.start() + 8 : match.end() - 15]
+
+    def extractLoc(self, s):
+        s = os.path.basename(s)
+        if self.labRE.match(s):
+            return s.split(".")[1]
+        return os.path.basename(s).split(".")[2]
+
 
 
 def test():
