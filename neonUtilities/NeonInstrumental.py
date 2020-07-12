@@ -91,7 +91,7 @@ class NeonInstrumental(neon.Neon):
 
 def test():
     n = NeonInstrumental(
-        dpID="DP1.00003.001", site="MOAB", dates=["2018-05", "2018-06"]
+        dpID="DP1.00003.001", site="MOAB", dates=["2018-05", "2018-06"], avg=15
     )
     n.download()
     n.stackByTable()

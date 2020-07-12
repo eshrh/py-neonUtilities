@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with py-neonUtilities.  If not, see <https://www.gnu.org/licenses/>.
 
-# TODO implement file-size summation.
 # TODO make sure that you can actually only provide dates and not site.
 
 import json
@@ -26,6 +25,7 @@ import urllib
 import glob
 import shutil
 import zlib
+import math
 
 class Neon:
     """Parent class for all Neon datatypes"""
@@ -47,7 +47,7 @@ class Neon:
         }
 
         self.baseurl = "https://data.neonscience.org/api/v0/data/"
-        self.zipre = re.compile(package + "(.*)\.zip")
+        self.zipre = re.compile(package+"\.(.*)\.zip")
         self.nameRE = re.compile(
             "NEON\.(.*)\.[a-z]{3}_([a-zA-Z]*)\.csv|[0-9]{3}\.(.*)\.([0-9]{4}-[0-9]{2}|[a-z]*)\."
         )
@@ -69,7 +69,7 @@ class Neon:
             return True
         return False
 
-    def download(self, check_hashes = False):
+    def download(self):
         """Class method to download zip files. Overridden."""
         self.rootname = self.data["dpID"]
 
@@ -86,10 +86,10 @@ class Neon:
         res = False
         for n, idxurl in enumerate(self.idxurls):
             self.currentlyDl = n
-            print(f"Downloading chunk {n+1}")
             if self.data["avg"]!=None:
                 res = self.downloadFiles(idxurl, re=self.isre)
-                #TODO results
+                #TODO hashchecking
+                #TODO sizechecking
             else:
                 res = self.downloadZips(idxurl)
         if res:
@@ -113,9 +113,19 @@ class Neon:
 
         return json.loads(req.text)["data"]["files"]
 
+
+    def readable(self, size):
+        if size == 0:
+            return "0"
+        exts = ("B", "KB", "MB", "GB")
+        ext = int(math.floor(math.log(size, 1024)))
+        val = round(size / math.pow(1024, ext), 2)
+        return f"{val} {exts[ext]}"
+
     def downloadZips(self, idxurl):
         """privately used function to download an individual zip file from url"""
         index = self.getReq(idxurl)
+
         zipidx = None
         for i in range(len(index)):
             match = self.zipre.search(index[i]["name"])
@@ -123,6 +133,8 @@ class Neon:
                 zipidx = i
                 break
         if zipidx != None:
+            size = int(index[zipidx]["size"])
+            print(f"Downloading chunk {self.currentlyDl+1}. Size: {self.readable(size)}")
             urllib.request.urlretrieve(
                 index[zipidx]["url"], os.path.join(self.rootname, index[zipidx]["name"])
             )
@@ -142,7 +154,7 @@ class Neon:
         index = self.getReq(idxurl)
         foldername = None
         for i in index:
-            if self.zipre.match(i["name"]):
+            if self.zipre.search(i["name"]):
                 foldername = i["name"][:-4]
                 break
 
@@ -151,17 +163,19 @@ class Neon:
                 f"File missing. This may be because data chunk {idxurl} does not exist."
             )
             return False
-
         self.makeIfNotExists(os.path.join(self.rootname, foldername))
         if not re:
             re = self.filere
 
+        print(f"Downloading chunk {self.currentlyDl+1}.")
         for i in index:
             if re.search(i["name"]) and self.packagere.search(i["name"]):
+                print(i['crc32'])
                 urllib.request.urlretrieve(
                     i["url"], os.path.join(self.rootname, foldername, i["name"])
                 )
         self.folders.append(foldername)
+        print(f"Completed zip {self.currentlyDl+1}")
         return True
 
     def mkdt(self, y, m):
@@ -218,7 +232,7 @@ class Neon:
         toRemove = [
             i
             for i in glob.glob(os.path.join(direc, "*"))
-            if not self.zipre.match(i) and "stackedFiles" not in i
+            if not self.zipre.search(i) and "stackedFiles" not in i
         ]
         for i in toRemove:
             if os.path.isdir(i):
