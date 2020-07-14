@@ -1,11 +1,11 @@
 # This file is part of py-neonUtilities.
 
-# Foobar is free software: you can redistribute it and/or modify
+# py-neonUtilities is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Foobar is distributed in the hope that it will be useful,
+# py-neonUtilities is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -31,7 +31,9 @@ from itertools import chain
 class NeonObservational(neon.Neon):
     def __init__(self, dpID=None, site=None, dates=None, package="basic", token=None):
         # inherit functions from the parent Neon class from neon.py
-        neon.Neon.__init__(self, dpID=dpID, site=site, dates=dates, package=package, token=token)
+        neon.Neon.__init__(
+            self, dpID=dpID, site=site, dates=dates, package=package, token=token
+        )
         self.stackedFiles = {}
 
     def stackByTable(self, root=None, clean=True):
@@ -98,14 +100,13 @@ class NeonObservational(neon.Neon):
             [self.extractName(i) for i in list(chain.from_iterable(self.siteDateFiles))]
         )
         # key functions
-        self.stack_site_date(self.siteDateFiles,flat)
+        self.stack_site_date(self.siteDateFiles, flat)
         self.stack_site_all()
         self.stack_lab()
 
         if clean:
             # inherited
             self.cleandir(self.root)
-
 
     def instances(self, name, files):
         """Helper function for *-all stacking. Finds tables
@@ -201,7 +202,6 @@ class NeonObservational(neon.Neon):
         return os.path.basename(s).split(".")[2]
 
 
-
 def test():
     n = NeonObservational(
         dpID="DP1.10055.001",
@@ -210,6 +210,7 @@ def test():
     )
     n.download()
     n.stackByTable()
+
 
 def test2():
     obj = NeonObservational(
@@ -220,21 +221,23 @@ def test2():
     )
     obj.download()
     obj.stackByTable(clean=True)
-    obj.stackByTable("DP1.10055.001",clean=False)
+    obj.stackByTable("DP1.10055.001", clean=False)
     df = obj.to_pandas()
 
     print(df["amc_fieldCellCounts"])
 
+
 def test3():
     obj1 = NeonObservational(
         dpID="DP1.10104.001",
-        site=["NIWO","JERC"],
+        site=["NIWO", "JERC"],
         # dates=[["2019-06","2019-09"]],
         dates=["2019-07"],
         package="expanded",
     )
     obj1.download()
-    obj1.stackByTable("DP1.10104.001",clean=False)
+    obj1.stackByTable("DP1.10104.001", clean=False)
     df = obj1.to_pandas()
+
 
 test3()

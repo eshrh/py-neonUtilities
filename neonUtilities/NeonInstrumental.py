@@ -1,11 +1,11 @@
 # This file is part of py-neonUtilities.
 
-# Foobar is free software: you can redistribute it and/or modify
+# py-neonUtilities is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Foobar is distributed in the hope that it will be useful,
+# py-neonUtilities is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -76,7 +76,7 @@ class NeonInstrumental(neon.Neon):
         flat = set(
             [self.extractISname(i) for i in list(chain.from_iterable(self.files))]
         )
-        self.stack_site_date(self.files,flat)
+        self.stack_site_date(self.files, flat)
 
         if clean:
             self.cleandir(self.root)
@@ -88,6 +88,7 @@ class NeonInstrumental(neon.Neon):
             return None
         matchstr = str(match.group(0))
         return matchstr.split(".")[-5]
+
 
 def test():
     n = NeonInstrumental(

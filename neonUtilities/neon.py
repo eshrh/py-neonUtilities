@@ -1,11 +1,11 @@
 # This file is part of py-neonUtilities.
 
-# Foobar is free software: you can redistribute it and/or modify
+# py-neonUtilities is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Foobar is distributed in the hope that it will be useful,
+# py-neonUtilities is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -27,6 +27,7 @@ import shutil
 import zlib
 import math
 
+
 class Neon:
     """Parent class for all Neon datatypes"""
 
@@ -47,12 +48,12 @@ class Neon:
         }
 
         self.baseurl = "https://data.neonscience.org/api/v0/data/"
-        self.zipre = re.compile(package+"\.(.*)\.zip")
+        self.zipre = re.compile(package + "\.(.*)\.zip")
         self.nameRE = re.compile(
             "NEON\.(.*)\.[a-z]{3}_([a-zA-Z]*)\.csv|[0-9]{3}\.(.*)\.([0-9]{4}-[0-9]{2}|[a-z]*)\."
         )
 
-        if avg!=None:
+        if avg != None:
             self.isre = re.compile(
                 "[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_" + avg + "min"
             )
@@ -86,10 +87,10 @@ class Neon:
         res = False
         for n, idxurl in enumerate(self.idxurls):
             self.currentlyDl = n
-            if self.data["avg"]!=None:
+            if self.data["avg"] != None:
                 res = self.downloadFiles(idxurl, re=self.isre)
-                #TODO hashchecking
-                #TODO sizechecking
+                # TODO hashchecking
+                # TODO sizechecking
             else:
                 res = self.downloadZips(idxurl)
         if res:
@@ -113,7 +114,6 @@ class Neon:
 
         return json.loads(req.text)["data"]["files"]
 
-
     def readable(self, size):
         if size == 0:
             return "0"
@@ -134,7 +134,10 @@ class Neon:
                 break
         if zipidx != None:
             size = int(index[zipidx]["size"])
-            print(f"Downloading chunk {self.currentlyDl+1}. Size: {self.readable(size)}")
+            print(
+                f"Downloading chunk {self.currentlyDl+1}. Size: {self.readable(size)}"
+            )
+            print(index[zipidx]['url'])
             urllib.request.urlretrieve(
                 index[zipidx]["url"], os.path.join(self.rootname, index[zipidx]["name"])
             )
@@ -170,7 +173,7 @@ class Neon:
         print(f"Downloading chunk {self.currentlyDl+1}.")
         for i in index:
             if re.search(i["name"]) and self.packagere.search(i["name"]):
-                print(i['crc32'])
+                print(i["crc32"])
                 urllib.request.urlretrieve(
                     i["url"], os.path.join(self.rootname, foldername, i["name"])
                 )
@@ -240,13 +243,13 @@ class Neon:
             else:
                 os.remove(i)
 
-    def resetDir(self,direc):
+    def resetDir(self, direc):
         if os.path.exists(direc):
             shutil.rmtree(direc)
         os.makedirs(direc)
 
     def hashf(self, filename):
-        with open(filename, 'rb') as fh:
+        with open(filename, "rb") as fh:
             hash = 0
             while True:
                 s = fh.read(65536)
