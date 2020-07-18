@@ -84,6 +84,8 @@ class NeonInstrumental(neon.Neon):
         match = self.isre.search(s)
         if not match:
             return None
-        print(match)
         matchstr = str(match.group(0))
-        return matchstr.split(".")[-5]
+        if self.data["avg"] is None:
+            return matchstr.split(".")[-5]
+        else:
+            return matchstr.split(".")[-1]

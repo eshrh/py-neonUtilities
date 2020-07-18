@@ -173,7 +173,7 @@ class Neon:
 
         print(f"Downloading chunk {self.currentlyDl+1}.")
         for i in index:
-            if re.search(i["name"]) and self.packagere.search(i["name"]):
+            if usere.search(i["name"]) and self.packagere.search(i["name"]):
                 urllib.request.urlretrieve(
                     i["url"], os.path.join(self.rootname, foldername, i["name"])
                 )
