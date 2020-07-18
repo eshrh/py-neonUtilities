@@ -13,10 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with py-neonUtilities.  If not, see <https://www.gnu.org/licenses/>.
 
-from importlib import reload
-import neon
-
-reload(neon)
+from .import neon
 
 import re
 import os
@@ -89,20 +86,4 @@ class NeonInstrumental(neon.Neon):
             return None
         print(match)
         matchstr = str(match.group(0))
-        if self.data['avg'] is not None:
-            return matchstr.split(".")[-1]
-        else:
-            return matchstr.split(".")[-5]
-
-
-def test():
-    n = NeonInstrumental(
-        dpID="DP1.00003.001", site="MOAB", dates=["2018-05", "2018-06"], avg=30
-    )
-    #n.download()
-    n.stackByTable("DP1.00003.001", clean=False)
-    topd = n.to_pandas()
-    print(topd)
-
-
-test()
+        return matchstr.split(".")[-5]
