@@ -13,7 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with py-neonUtilities.  If not, see <https://www.gnu.org/licenses/>.
 
-from .import neon
+from importlib import reload
+import neon
+reload(neon)
 
 import re
 import os
