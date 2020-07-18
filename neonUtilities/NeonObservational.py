@@ -14,11 +14,7 @@
 # along with py-neonUtilities.  If not, see <https://www.gnu.org/licenses/>.
 
 import glob
-from importlib import reload
-import neon
-
-reload(neon)
-
+from . import neon
 import os
 from os.path import join
 from pathlib import Path
@@ -201,43 +197,3 @@ class NeonObservational(neon.Neon):
             return s.split(".")[1]
         return os.path.basename(s).split(".")[2]
 
-
-def test():
-    n = NeonObservational(
-        dpID="DP1.10055.001",
-        site=["WOOD", "MOAB"],
-        dates={"WOOD": ["2017-05"], "MOAB": ["2017-08"]},
-    )
-    n.download()
-    n.stackByTable()
-
-
-def test2():
-    obj = NeonObservational(
-        dpID="DP1.10055.001",
-        site=["DELA", "TALL"],
-        dates=["2019-02"],
-        package="expanded",
-    )
-    obj.download()
-    obj.stackByTable(clean=True)
-    obj.stackByTable("DP1.10055.001", clean=False)
-    df = obj.to_pandas()
-
-    print(df["amc_fieldCellCounts"])
-
-
-def test3():
-    obj1 = NeonObservational(
-        dpID="DP1.10104.001",
-        site=["NIWO", "JERC"],
-        # dates=[["2019-06","2019-09"]],
-        dates=["2019-07"],
-        package="expanded",
-    )
-    obj1.download()
-    obj1.stackByTable("DP1.10104.001", clean=False)
-    df = obj1.to_pandas()
-
-
-test3()

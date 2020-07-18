@@ -29,8 +29,6 @@ class NeonInstrumental(neon.Neon):
         self, dpID=None, site=None, dates=None, avg=None, package="basic", token=None
     ):
         # inherit functions from the parent Neon class from neon.py
-        if type(avg) == int:
-            avg = str(avg)
 
         neon.Neon.__init__(self, dpID, site, dates, avg, package, token)
         self.stackedFiles = {}

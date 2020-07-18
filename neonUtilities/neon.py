@@ -54,9 +54,16 @@ class Neon:
         )
 
         if avg != None:
-            self.isre = re.compile(
-                "[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_" + avg + "min"
-            )
+            if type(avg) == int:
+                avg = str(avg)
+                self.isre = re.compile(
+                    "[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_" + avg + "min"
+                )
+            else:
+                avg = str(avg)
+                self.isre = re.compile(
+                    "[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_" + avg
+                )
         else:
             self.isre = re.compile("[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_(.*)")
 
@@ -137,7 +144,6 @@ class Neon:
             print(
                 f"Downloading chunk {self.currentlyDl+1}. Size: {self.readable(size)}"
             )
-            print(index[zipidx]['url'])
             urllib.request.urlretrieve(
                 index[zipidx]["url"], os.path.join(self.rootname, index[zipidx]["name"])
             )
