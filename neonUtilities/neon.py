@@ -60,7 +60,7 @@ class Neon:
         else:
             self.isre = re.compile("[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.[0-9]{3}\.(.*)_(.*)")
 
-        self.filere = re.compile(".csv|.xml")
+        self.filere = re.compile(".csv")
         self.packagere = re.compile(package)
         self.folders = []
 
@@ -88,7 +88,7 @@ class Neon:
         for n, idxurl in enumerate(self.idxurls):
             self.currentlyDl = n
             if self.data["avg"] != None:
-                res = self.downloadFiles(idxurl, re=self.isre)
+                res = self.downloadFiles(idxurl, usere=self.isre)
                 # TODO hashchecking
                 # TODO sizechecking
             else:
@@ -152,7 +152,7 @@ class Neon:
             return False
         return True
 
-    def downloadFiles(self, idxurl, re=None):
+    def downloadFiles(self, idxurl, usere=None):
         """Downloads files instead of zips"""
         index = self.getReq(idxurl)
         foldername = None
@@ -167,18 +167,18 @@ class Neon:
             )
             return False
         self.makeIfNotExists(os.path.join(self.rootname, foldername))
-        if not re:
-            re = self.filere
+
+        if not usere:
+            usere = self.filere
 
         print(f"Downloading chunk {self.currentlyDl+1}.")
         for i in index:
-            if re.search(i["name"]) and self.packagere.search(i["name"]):
-                print(i["crc32"])
+            if self.packagere.search(i["name"]):
                 urllib.request.urlretrieve(
                     i["url"], os.path.join(self.rootname, foldername, i["name"])
                 )
         self.folders.append(foldername)
-        print(f"Completed zip {self.currentlyDl+1}")
+        print(f"Completed chunk {self.currentlyDl+1}")
         return True
 
     def mkdt(self, y, m):

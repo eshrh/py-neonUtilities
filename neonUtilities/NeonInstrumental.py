@@ -76,6 +76,7 @@ class NeonInstrumental(neon.Neon):
         flat = set(
             [self.extractISname(i) for i in list(chain.from_iterable(self.files))]
         )
+
         self.stack_site_date(self.files, flat)
 
         if clean:
@@ -86,16 +87,22 @@ class NeonInstrumental(neon.Neon):
         match = self.isre.search(s)
         if not match:
             return None
+        print(match)
         matchstr = str(match.group(0))
-        return matchstr.split(".")[-5]
+        if self.data['avg'] is not None:
+            return matchstr.split(".")[-1]
+        else:
+            return matchstr.split(".")[-5]
 
 
 def test():
     n = NeonInstrumental(
-        dpID="DP1.00003.001", site="MOAB", dates=["2018-05", "2018-06"], avg=15
+        dpID="DP1.00003.001", site="MOAB", dates=["2018-05", "2018-06"], avg=30
     )
-    n.download()
-    n.stackByTable()
+    #n.download()
+    n.stackByTable("DP1.00003.001", clean=False)
+    topd = n.to_pandas()
+    print(topd)
 
 
 test()
