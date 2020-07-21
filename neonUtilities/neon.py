@@ -114,7 +114,7 @@ class Neon:
     def getReq(self, idxurl):
         """catch ratelimit exceeded and wait"""
         req = self.makeReq(idxurl)
-        while req.headers["X-RateLimit-Remaining"] == 0:
+        while req.headers["X-RateLimit-Remaining"] == 1:
             print("Rate limit exceeded. Consider using an api token. Pausing...")
             time.sleep(req.headers["RetryAfter"])
             print("Retrying")
