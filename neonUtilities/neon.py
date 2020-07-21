@@ -145,6 +145,9 @@ class Neon:
             print(
                 f"Downloading chunk {self.currentlyDl+1}. Size: {self.readable(size)}"
             )
+            if os.path.exists(os.path.join(self.rootname,index[zipidx]['name'])):
+                print("already downloaded")
+                return True
             try:
                 urllib.request.urlretrieve(
                     index[zipidx]["url"], os.path.join(self.rootname, index[zipidx]["name"])
