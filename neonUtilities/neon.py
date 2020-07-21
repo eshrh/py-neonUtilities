@@ -70,6 +70,7 @@ class Neon:
         self.filere = re.compile(".csv")
         self.packagere = re.compile(package)
         self.folders = []
+        self.zipfiles = []
 
     def makeIfNotExists(self, name):
         if not os.path.exists(name):
@@ -144,9 +145,13 @@ class Neon:
             print(
                 f"Downloading chunk {self.currentlyDl+1}. Size: {self.readable(size)}"
             )
-            urllib.request.urlretrieve(
-                index[zipidx]["url"], os.path.join(self.rootname, index[zipidx]["name"])
-            )
+            try:
+                urllib.request.urlretrieve(
+                    index[zipidx]["url"], os.path.join(self.rootname, index[zipidx]["name"])
+                )
+            except:
+                print("Download failed, continuing...")
+
             self.zipfiles.append(
                 os.path.join(os.getcwd(), self.rootname, index[zipidx]["name"])
             )
@@ -273,22 +278,40 @@ class Neon:
 
         dfs = {}
         for i in self.stackedFiles:
-            dfs[i] = pd.read_csv(self.stackedFiles[i])
+            if type(self.stackedFiles[i])==str:
+                dfs[i] = pd.read_csv(self.stackedFiles[i])
+            else:
+                for n,name in enumerate(self.stackedFiles[i]):
+                    if i in dfs:
+                        dfs[i][name] = filename
+                    else:
+                        dfs[i] = {name:pd.read_csv(self.stackedFiles[i][name])}
+
         return dfs
 
-    def stack_site_date(self, files, flatnames):
+    def stack_site_date(self, files, flatnames, site=None):
         for name in flatnames:
             if not name:
                 continue
-            filename = join(self.stackedDir, name + "_stacked.csv")
+            if site is None:
+                filename = join(self.stackedDir, name + "_stacked.csv")
+            else:
+                filename = join(self.stackedDir, site+name+"_stacked.csv")
+
             out = CSVwriter(filename)
             for other in range(len(files)):
                 for i in files[other]:
-                    if name in i:
+                    if (name in i) and (site is None or site in i):
                         out.append(join(self.root, i))
                         break
             out.close()
-            self.stackedFiles[name] = filename
+            if site is None:
+                self.stackedFiles[name] = filename
+            else:
+                if site in self.stackedFiles:
+                    self.stackedFiles[site][name] = filename
+                else:
+                    self.stackedFiles[site] = {name:filename}
 
 
 class CSVwriter:

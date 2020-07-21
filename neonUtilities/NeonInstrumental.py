@@ -15,6 +15,7 @@
 
 from importlib import reload
 import neon
+
 reload(neon)
 
 import re
@@ -46,12 +47,19 @@ class NeonInstrumental(neon.Neon):
                 folders.append(join(self.root, fpath[:-4]))
         return folders
 
-    def stackByTable(self, root=None, clean=True):
-        if not root:
+    def stackByTable(self, root=None, clean=True, bySite=False):
+
+        if root is None:
             self.root = join(os.getcwd(), self.rootname)
         else:
+            self.folders = []
             self.root = join(os.getcwd(), root)
-            self.folders = os.listdir(self.root)
+            folderfiles = os.listdir(self.root)
+            for i in folderfiles:
+                if os.path.isdir(i) and "stackedFiles" not in i:
+                    self.folders.append(i)
+                elif self.zipre.search(i):
+                    self.zipfiles.append(join(root,i))
 
         if len(self.folders) == 0 and len(self.zipfiles) == 0:
             print(
@@ -74,7 +82,11 @@ class NeonInstrumental(neon.Neon):
             [self.extractISname(i) for i in list(chain.from_iterable(self.files))]
         )
 
-        self.stack_site_date(self.files, flat)
+        if bySite:
+            for site in self.data["site"]:
+                self.stack_site_date(self.files, flat, site=site)
+        else:
+            self.stack_site_date(self.files, flat)
 
         if clean:
             self.cleandir(self.root)
@@ -89,3 +101,13 @@ class NeonInstrumental(neon.Neon):
             return matchstr.split(".")[-5]
         else:
             return matchstr.split(".")[-1]
+
+
+
+def test():
+    n = NeonInstrumental(dpID="DP1.20288.001",site=["BARC","SUGG"],dates=["2018-03","2018-04"])
+    n.download()
+    n.stackByTable("DP1.20288.001",bySite=True)
+    print(n.to_pandas())
+
+test()
