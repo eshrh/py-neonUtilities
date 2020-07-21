@@ -14,9 +14,7 @@
 # along with py-neonUtilities.  If not, see <https://www.gnu.org/licenses/>.
 
 import glob
-from importlib import reload
-import neon
-reload(neon)
+from . import neon
 import os
 from os.path import join
 from pathlib import Path

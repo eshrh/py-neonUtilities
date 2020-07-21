@@ -13,11 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with py-neonUtilities.  If not, see <https://www.gnu.org/licenses/>.
 
-from importlib import reload
-import neon
-
-reload(neon)
-
+from . import neon
 import re
 import os
 from os.path import join
@@ -101,13 +97,3 @@ class NeonInstrumental(neon.Neon):
             return matchstr.split(".")[-5]
         else:
             return matchstr.split(".")[-1]
-
-
-
-def test():
-    n = NeonInstrumental(dpID="DP1.20288.001",site=["BARC","SUGG"],dates=["2018-03","2018-04"])
-    n.download()
-    n.stackByTable("DP1.20288.001",bySite=True)
-    print(n.to_pandas())
-
-test()
