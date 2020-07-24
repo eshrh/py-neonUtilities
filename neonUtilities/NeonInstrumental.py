@@ -37,10 +37,13 @@ class NeonInstrumental(neon.Neon):
         self.zipfiles = sorted(self.zipfiles)
         # unzip all. sorted to make sure everything is in order.
         for fpath in self.zipfiles:
-            with zipfile.ZipFile(fpath, "r") as f:
-                Path(join(self.root, fpath[:-4])).mkdir(parents=True, exist_ok=True)
-                f.extractall(join(self.root, fpath[:-4]))
-                folders.append(join(self.root, fpath[:-4]))
+            try:
+                with zipfile.ZipFile(fpath, "r") as f:
+                    Path(join(self.root, fpath[:-4])).mkdir(parents=True, exist_ok=True)
+                    f.extractall(join(self.root, fpath[:-4]))
+                    folders.append(join(self.root, fpath[:-4]))
+            except:
+                print(fpath,"bad zip file. Skipping.")
         return folders
 
     def stackByTable(self, root=None, clean=True, bySite=False):
@@ -54,8 +57,8 @@ class NeonInstrumental(neon.Neon):
             for i in folderfiles:
                 if os.path.isdir(i) and "stackedFiles" not in i:
                     self.folders.append(i)
-                elif self.zipre.search(i):
-                    self.zipfiles.append(join(root,i))
+                elif i.endswith(".zip"):
+                    self.zipfiles.append(join(self.root,i))
 
         if len(self.folders) == 0 and len(self.zipfiles) == 0:
             print(

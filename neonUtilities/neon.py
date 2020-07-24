@@ -145,6 +145,7 @@ class Neon:
             print(
                 f"Downloading chunk {self.currentlyDl+1}. Size: {self.readable(size)}"
             )
+            #TODO move this check before the request.
             if os.path.exists(os.path.join(self.rootname,index[zipidx]['name'])):
                 print("already downloaded")
                 return True
