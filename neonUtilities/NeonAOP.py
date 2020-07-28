@@ -17,7 +17,20 @@ from importlib import reload
 import neon
 reload(neon)
 
+import json
+import requests as req
+import urllib
+
+
 class NeonAOP(neon.Neon):
     def __init__(self, dpID=None, site=None, year=None):
-        #TODO error checking.
-        pass
+        neon.Neon.__init__(self)
+        self.baseurl = "https://data.neonscience.org/api/v0/data/"
+        self.data['token'] = None
+        print(req.get("https://data.neonscience.org/api/v0/products/"+dpID).json())
+
+
+def test():
+    naop = NeonAOP(dpID="DP2.30022.001",site="DELA",year="2016")
+
+test()
