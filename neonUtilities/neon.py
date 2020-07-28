@@ -26,6 +26,7 @@ import glob
 import shutil
 import zlib
 import math
+import sys
 
 
 class Neon:
@@ -47,7 +48,7 @@ class Neon:
             "token": token,
         }
 
-        self.baseurl = "https://data.neonscience.org/api/v0/data/"
+        self.baseurl = "https://data.neonscience.org/api/v0"
         self.zipre = re.compile(package + "\.(.*)\.zip")
         self.nameRE = re.compile(
             "NEON\.(.*)\.[a-z]{3}_([a-zA-Z]*)\.csv|[0-9]{3}\.(.*)\.([0-9]{4}-[0-9]{2}|[a-z]*)\."
@@ -81,11 +82,12 @@ class Neon:
     def download(self):
         """Class method to download zip files. Overridden."""
         self.rootname = self.data["dpID"]
-
         # create dataproduct directory if it does not exist
         # TODO allow for multiple dataproducts to be downloaded at once and stacked.
         if self.makeIfNotExists(self.rootname):
             print(f"[created root folder {self.rootname}]")
+
+        self.availableUrls = req.get(self.baseurl+"/products/"+self.data['dpID']).json()['data']['siteCodes']
 
         # find all the idxurls of month-chunks
         self.idxurls = self.constructIdxUrls()
@@ -201,27 +203,36 @@ class Neon:
             m = "0" + str(m)
         return str(y) + "-" + str(m)
 
-    def getRangeDates(self, pair):
+    def getYearMonth(self, date):
+        return (int(date.split("-")[0]), int(date.split("-")[1]))
+
+    def getRangeDates(self, pair, site):
         if type(pair) == str:
             return [pair]
         sdate, edate = pair
+        sy, sm = self.getYearMonth(sdate)
+        ey, em = self.getYearMonth(edate)
         dates = []
-        sy, sm = int(sdate.split("-")[0]), int(sdate.split("-")[1])
-        ey, em = int(edate.split("-")[0]), int(edate.split("-")[1])
-        if ey == sy:
-            dates.extend([self.mkdt(sy, i) for i in range(sm, em + 1)])
-        else:
-            dates.extend([self.mkdt(sy, i) for i in range(sm, 13)])
-            for i in range(sy + 1, ey):
-                dates.extend([self.mkdt(i, j) for j in range(1, 13)])
-            dates.extend([self.mkdt(ey, i) for i in range(1, em + 1)])
+
+        #get all available months for that site and dpid.
+        available = [i['availableMonths'] for i in self.availableUrls if i['siteCode']==site][0]
+        for i in available:
+            availy,availm = self.getYearMonth(i)
+            if ((availy>=sy) and (availm>=sm)) and ((availy<=ey) and (availm<=em)):
+                dates.append(i)
+
         return dates
 
+
     def basicUrl(self, dpid, site, date):
-        return self.baseurl + dpid + "/" + site + "/" + date
+        return self.baseurl+"/data/" + dpid + "/" + site + "/" + date
 
     def constructIdxUrls(self):
         # if there is only one site as a string, turn it into a single element array.
+        if "site" not in self.data and type(self.data['dates']) != dict:
+            print("site not provided and dates is not a dictionary.")
+            sys.exit()
+
         if type(self.data["site"]) == str:
             self.data["site"] = [self.data["site"]]
 
@@ -230,19 +241,17 @@ class Neon:
             for i in self.data["dates"]:
                 dates = []
                 for date in self.data["dates"][i]:
-                    dates.extend(self.getRangeDates(date))
+                    dates.extend(self.getRangeDates(date,i))
                 urls.extend(
                     [self.basicUrl(self.data["dpID"], i, date) for date in dates]
                 )
         else:
-            dates = []
-            for date in self.data["dates"]:
-                dates.extend(self.getRangeDates(date))
-
             for site in self.data["site"]:
-                urls.extend(
-                    [self.basicUrl(self.data["dpID"], site, date) for date in dates]
-                )
+                dates = []
+                for date in self.data['dates']:
+                    dates.extend(self.getRangeDates(date,site))
+
+                urls.extend([self.basicUrl(self.data["dpID"], site, date) for date in dates])
 
         return urls
 

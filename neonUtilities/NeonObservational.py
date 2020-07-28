@@ -14,7 +14,10 @@
 # along with py-neonUtilities.  If not, see <https://www.gnu.org/licenses/>.
 
 import glob
-from . import neon
+from importlib import reload
+import neon
+reload(neon)
+
 import os
 from os.path import join
 from pathlib import Path
@@ -203,3 +206,16 @@ class NeonObservational(neon.Neon):
             return s.split(".")[1]
         return os.path.basename(s).split(".")[2]
 
+def test():
+    obj = NeonObservational(
+        dpID="DP1.20138.001",
+        site=["REDB"],
+        dates=[["2020-02","2020-05"]],
+        package="expanded",
+    )
+    obj.download()
+    obj.stackByTable(clean=False)
+    df = obj.to_pandas()
+    print(df["amc_fieldCellCounts"])
+
+test()
