@@ -32,7 +32,7 @@ class NeonObservational(neon.Neon):
         )
         self.stackedFiles = {}
 
-    def stackByTable(self, root=None, clean=True):
+    def stackByTable(self, root=None, clean=True, bySite=False):
         """
         Method to stack zip files by table
 
@@ -96,7 +96,13 @@ class NeonObservational(neon.Neon):
             [self.extractName(i) for i in list(chain.from_iterable(self.siteDateFiles))]
         )
         # key functions
-        self.stack_site_date(self.siteDateFiles, flat)
+        if bySite:
+            for site in self.data['site']:
+                self.stack_site_date(self.siteDateFiles, flat, site=site)
+        else:
+            self.stack_site_date(self.siteDateFiles, flat)
+
+        #TODO implement bySite stacking for stack_site_all and stack_lab
         self.stack_site_all()
         self.stack_lab()
 
